@@ -5,11 +5,30 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Home::index');
+$routes->get('/', 'AuthController::loginpage');
+$routes->get('/admin', 'SuperAdminController::login');
+$routes->get('/auth/logoutadmin', 'SuperAdminController::logout');
+$routes->get('/admindashboard', 'AdminDashboardController::adminsa');
+
+
+$routes->match(['GET', 'POST'], '/login-admin', 'SuperAdminController::loginadmin');
+$routes->post('/import/proses', 'SuperAdminController::proses');
+$routes->post('/import/desa', 'SuperAdminController::desa');
+$routes->post('/import/admin', 'SuperAdminController::prosesadmin');
+$routes->post('/import/kecamatan', 'SuperAdminController::kecamatan');
 $routes->get('(:segment)', 'Login::index/$1', ['as' => 'login.role']);
-$routes->match(['get', 'post'], 'auth/login', 'AuthController::login');
+$routes->match(['GET', 'POST'], 'auth/login', 'AuthController::login');
 $routes->get('auth/logout', 'AuthController::logout');
-$routes->get('load-content', 'ContentController::loadContent');
+$routes->get('auth/forgot', 'AuthController::forgot');
+$routes->get('load-content/(:any)', 'ContentController::loadContent/$1');
+$routes->match(['GET','POST'], 'forgot-password', 'AuthController::forgotPassword');
+
+$routes->get('reset-password/(:segment)', 'AuthController::resetPassword/$1');
+$routes->post('process-reset-password', 'AuthController::processResetPassword');
+
+
+
+
 
 
 

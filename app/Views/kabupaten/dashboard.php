@@ -118,70 +118,58 @@
             />
             <!--end::Brand Image-->
             <!--begin::Brand Text-->
-            <span class="brand-text fw-light"><?= esc(ucfirst($user->role)) ?> <?= esc(ucfirst($user->username)) ?></span>
+            <!-- <span class="brand-text fw-light"><?= esc(ucfirst($user->role)) ?> <?= esc(ucfirst($user->username)) ?></span> -->
             <!--end::Brand Text-->
           </a>
           <!--end::Brand Link-->
         </div>
         <!--end::Sidebar Brand-->
         <!--begin::Sidebar Wrapper-->
-<div class="sidebar-wrapper">
+        <div class="sidebar-wrapper">
   <nav class="mt-2">
-    <!--begin::Sidebar Menu-->
     <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation" 
-    aria-label="Main navigation" data-accordion="false" id="navigation">
-  <li class="nav-item">
-    <a href="#" class="nav-link active" data-content="status" id="menu-status">
-      <i class="nav-icon bi bi-speedometer"></i>
-      <p>Status</p>
-    </a>
-  </li>
-  <li class="nav-item">
-    <a href="#" class="nav-link" data-content="upload" id="menu-upload">
-      <i class="nav-icon bi bi-clipboard-fill"></i>
-      <p>Document Upload</p>
-    </a>
-  </li>
-  <li class="nav-item">
-    <a href="#" class="nav-link" data-content="settings" id="menu-settings">
-      <i class="nav-icon bi bi-pencil-square"></i>
-      <p>Pengaturan</p>
-    </a>
-  </li>
-</ul>
-
-
-    <!--end::Sidebar Menu-->
+        aria-label="Main navigation" data-accordion="false" id="navigation">
+      <li class="nav-item">
+        <a href="#" class="nav-link active" data-content="status" id="menu-status">
+          <i class="nav-icon bi bi-speedometer"></i>
+          <p>Status</p>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link" data-content="upload" id="menu-upload">
+          <i class="nav-icon bi bi-clipboard-fill"></i>
+          <p>Document Upload</p>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link" data-content="settings" id="menu-settings">
+          <i class="nav-icon bi bi-pencil-square"></i>
+          <p>Pengaturan</p>
+        </a>
+      </li>
+    </ul>
   </nav>
 </div>
-        <!--end::Sidebar Wrapper-->
-      </aside>
-      <!--end::Sidebar-->
-      <!--begin::App Main-->
-              <main class="app-main">
-          <div class="app-content-header">
-            <div class="container-fluid">
-              <div class="row">
-                <div class="col-sm-6">
-                <h3 class="mb-0" id="content-title">Status Document <?= esc(ucfirst($user->role)) ?> <?= esc(ucfirst($user->username)) ?></h3>
-
-                  <!-- Judul akan dimuat dari konten partial -->
-                  <div id="content-title"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="app-content">
-            <div class="container-fluid">
-              <div class="row">
-                <div id="dynamic-content">
-                  <?php include('status_content.php'); ?>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
+</aside>
+<main class="app-main">
+  <div class="app-content-header">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-6">
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="app-content">
+    <div class="container-fluid">
+      <div class="row">
+        <div id="dynamic-content">
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
       <!--end::App Main-->
       <!--begin::Footer-->
       <footer class="app-footer">
@@ -237,82 +225,90 @@
         }
       });
     </script>
-    <!--end::OverlayScrollbars Configure-->
-  
- 
-    <script>
-// Simpan state aktif terakhir
-let currentActiveMenu = 'menu-status';
 
+
+<script>
+// Fungsi terpisah untuk load content
+function loadContent(contentType) {
+  const dynamicContent = document.getElementById('dynamic-content');
+  if (!dynamicContent) {
+    console.error('Target element #dynamic-content not found');
+    return;
+  }
+
+  dynamicContent.innerHTML = '<div class="text-center py-5">Memuat data...</div>';
+
+  fetch(`/load-content/${contentType}?role=<?= strtolower(esc($user->role)) ?>`)
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.text();
+    })
+    .then(html => {
+      dynamicContent.innerHTML = html;
+      initDynamicContentScripts(); // Fungsi untuk inisialisasi komponen
+    })
+    .catch(error => {
+      console.error('Fetch error:', error);
+      dynamicContent.innerHTML = `
+        <div class="alert alert-danger">
+          Error loading content: ${error.message}
+        </div>
+      `;
+    });
+}
+
+// Fungsi untuk inisialisasi komponen dinamis
+function initDynamicContentScripts() {
+  // Inisialisasi komponen JS di content yang di-load
+  if (typeof OverlayScrollbarsGlobal !== 'undefined') {
+    OverlayScrollbarsGlobal.OverlayScrollbars(document.querySelector('.sidebar-wrapper'), {
+      scrollbars: {
+        theme: 'os-theme-light',
+        autoHide: 'leave',
+        clickScroll: true
+      }
+    });
+  }
+}
+
+// Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-  const navLinks = document.querySelectorAll('.sidebar-menu a.nav-link');
+  // Set active menu
+  let currentActiveMenu = localStorage.getItem('activeMenu') || 'menu-status';
   
-  // Fungsi untuk mengaktifkan menu
   function setActiveMenu(menuId) {
-    // Hapus class active dari semua menu
-    navLinks.forEach(link => {
+    document.querySelectorAll('.sidebar-menu a.nav-link').forEach(link => {
       link.classList.remove('active');
       link.parentElement.classList.remove('menu-open');
     });
     
-    // Tambahkan class active ke menu yang dipilih
     const activeLink = document.getElementById(menuId);
     if (activeLink) {
       activeLink.classList.add('active');
       activeLink.parentElement.classList.add('menu-open');
       currentActiveMenu = menuId;
+      localStorage.setItem('activeMenu', menuId);
     }
   }
 
-  // Event listener untuk setiap menu
-  navLinks.forEach(link => {
+  // Attach click handlers
+  document.querySelectorAll('.sidebar-menu a.nav-link').forEach(link => {
     link.addEventListener('click', function(e) {
       e.preventDefault();
       const menuId = this.id;
-      const contentType = this.getAttribute('data-content');
-      
+      const contentType = this.dataset.content;
       setActiveMenu(menuId);
       loadContent(contentType);
     });
   });
-  
-  // Fungsi load content
-  function loadContent(contentType) {
-    const titleMap = {
-      'status': 'Status Document',
-      'upload': 'Upload Document',
-      'settings': 'Pengaturan'
-    };
-    
-    // Update judul
-    document.getElementById('content-title').textContent = 
-      titleMap[contentType] + ' <?= esc(ucfirst($user->role)) ?> <?= esc(ucfirst($user->username)) ?>';
-    
-    // Load konten via AJAX
-    fetch(`/load-content/${contentType}`)
-      .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.text();
-      })
-      .then(html => {
-        document.getElementById('dynamic-content').innerHTML = html;
-        // Set menu active setelah content selesai load
-        setActiveMenu(`menu-${contentType}`);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        // Kembalikan ke menu sebelumnya jika error
-        setActiveMenu(currentActiveMenu);
-      });
-  }
 
-  // Inisialisasi pertama kali
+  // Initial load
   setActiveMenu(currentActiveMenu);
+  const initialContent = document.querySelector(`#${currentActiveMenu}`)?.dataset.content || 'status';
+  loadContent(initialContent);
 });
 </script>
 
 
-    <!--end::Script-->
   </body>
-  <!--end::Body-->
 </html>

@@ -1,4 +1,5 @@
-              <!-- begin table -->
+<h3 class="mb-3" id="content-title">Status Document <?= esc(ucfirst($role)) ?> <?= esc(ucfirst(strtolower($namaWilayah))) ?> </h3>
+             <!-- begin table -->
               <div class="card-body p-0">
                     <table class="table table-striped">
                       <thead>

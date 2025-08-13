@@ -90,7 +90,7 @@
                 </div>
             <?php endif; ?>
 
-        <form action="<?= base_url('/auth/login') ?>" method="post">
+        <form action="<?= base_url('/login-admin') ?>" method="post">
 
             <div class="input-group mb-3">
               <input type="text" name="username" class="form-control" placeholder="UserName" value="<?= old('username') ?>" />
@@ -99,9 +99,8 @@
             <div class="input-group mb-3">
                 <select class="form-select" id="" name="role" required>
                           <option selected disabled value="">Pilih role</option>
-                          <option value="kabupaten">Kabupaten</option>
-                          <option value="kecamatan">Kecamatan</option>
-                          <option value="desa">Desa</option>
+                          <option value="sa">Sa</option>
+                          <option value="admin">admin</option>
                           </select>
                           <!-- <div class="invalid-feedback">Please select a valid state.</div> -->
                         </div>
@@ -137,7 +136,7 @@
             </a> -->
           </div> 
           <!-- /.social-auth-links -->
-     <p class="mb-1"><a href="<?= base_url('/auth/forgot') ?>">Lupa password ?</a></p>
+     <!-- <p class="mb-1"><a href="<?= base_url('/auth/forgot') ?>">Lupa password ?</a></p> -->
           <p class="mb-0">
             <!-- <a href="register.html" class="text-center"> Register a new membership </a> -->
           </p>

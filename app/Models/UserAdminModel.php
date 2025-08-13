@@ -4,9 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class UserModel extends Model
+class UserAdminModel extends Model
 {
-    protected $table = 'user';
+    protected $table = 'user_admin';
     protected $primaryKey = 'id';
     protected $allowedFields = ['username', 'password', 'email', 'role', 'role_id', 'is_active', 'created_by' ,'updated_at'];
     protected $useTimestamps = true;
@@ -19,21 +19,12 @@ class UserModel extends Model
      */
     public function getUserByUsernameAndRole(string $username, string $role)
     {
-        $builder = $this->db->table('user u')
+        $builder = $this->db->table('user_admin u')
             ->where('u.username', $username)
             ->where('u.role', $role)
             ->where('u.is_active', 1);
-    
-        if ($role === 'desa') {
-            $builder->select('u.id as user_id, u.username, u.password, u.role, u.role_id, u.is_active, d.nama as wilayah_nama, d.id as desa_id, d.kecamatan_id')
-                    ->join('desa d', 'd.id = u.role_id', 'left');
-        } elseif ($role === 'kecamatan') {
-            $builder->select('u.id as user_id, u.username, u.password, u.role, u.role_id, u.is_active, k.nama as wilayah_nama, k.id as kecamatan_id, k.kabupaten_id')
-                    ->join('kecamatan k', 'k.id = u.role_id', 'left');
-        } else {
-            // Role kabupaten atau lainnya tanpa join
-            $builder->select('u.id as user_id, u.username, u.password, u.role, u.role_id, u.is_active, NULL as wilayah_nama');
-        }
+
+        $builder->select('u.id as user_id, u.username, u.password, u.role, u.role_id, u.is_active, NULL as wilayah_nama');
     
         return $builder->get()->getRowArray();
     }

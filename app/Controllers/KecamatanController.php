@@ -33,6 +33,10 @@ class KecamatanController extends BaseController
             'user' => $user
         ];
 
+
+        // log_message('info', json_encode($user));
+
+
         return view('kecamatan/dashboard', $data);
     }
 }
