@@ -10,6 +10,9 @@ $routes->get('/admin', 'SuperAdminController::login');
 $routes->get('/auth/logoutadmin', 'SuperAdminController::logout');
 $routes->get('/admindashboard', 'AdminDashboardController::adminsa');
 
+$routes->post('/email/update', 'UserController::updateEmail');
+$routes->post('/user/update-password', 'UserController::updatePassword');
+
 
 $routes->match(['GET', 'POST'], '/login-admin', 'SuperAdminController::loginadmin');
 $routes->post('/import/proses', 'SuperAdminController::proses');

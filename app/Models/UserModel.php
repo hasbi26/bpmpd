@@ -25,17 +25,25 @@ class UserModel extends Model
             ->where('u.is_active', 1);
     
         if ($role === 'desa') {
-            $builder->select('u.id as user_id, u.username, u.password, u.role, u.role_id, u.is_active, d.nama as wilayah_nama, d.id as desa_id, d.kecamatan_id')
+            $builder->select('u.id as user_id, u.username, u.password, u.role, u.email, u.role_id, u.is_active, d.nama as wilayah_nama, d.id as desa_id, d.kecamatan_id')
                     ->join('desa d', 'd.id = u.role_id', 'left');
         } elseif ($role === 'kecamatan') {
-            $builder->select('u.id as user_id, u.username, u.password, u.role, u.role_id, u.is_active, k.nama as wilayah_nama, k.id as kecamatan_id, k.kabupaten_id')
+            $builder->select('u.id as user_id, u.username, u.password, u.role, u.email, u.role_id, u.is_active, k.nama as wilayah_nama, k.id as kecamatan_id, k.kabupaten_id')
                     ->join('kecamatan k', 'k.id = u.role_id', 'left');
         } else {
             // Role kabupaten atau lainnya tanpa join
-            $builder->select('u.id as user_id, u.username, u.password, u.role, u.role_id, u.is_active, NULL as wilayah_nama');
+            $builder->select('u.id as user_id, u.username, u.password, u.role, u.email, u.role_id, u.is_active, NULL as wilayah_nama');
         }
     
         return $builder->get()->getRowArray();
+    }
+
+
+    public function updatePassword($userId, $newPassword)
+    {
+        return $this->update($userId, [
+            'password' => password_hash($newPassword, PASSWORD_DEFAULT)
+        ]);
     }
     
 

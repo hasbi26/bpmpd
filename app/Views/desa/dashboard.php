@@ -156,6 +156,17 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-6">
+
+        <?php if (session()->getFlashdata('success')): ?>
+<div class="alert alert-success alert-dismissible fade show" role="alert" id="flashMessage">
+    <?= session()->getFlashdata('success') ?>
+</div>
+<?php elseif (session()->getFlashdata('error')): ?>
+<div class="alert alert-danger alert-dismissible fade show" role="alert" id="flashMessage">
+    <?= session()->getFlashdata('error') ?>
+</div>
+<?php endif; ?>
+        
         </div>
       </div>
     </div>
@@ -307,6 +318,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const initialContent = document.querySelector(`#${currentActiveMenu}`)?.dataset.content || 'status';
   loadContent(initialContent);
 });
+</script>
+
+
+<script>
+    setTimeout(function() {
+        let flash = document.getElementById('flashMessage');
+        if (flash) {
+            flash.style.transition = 'opacity 0.5s ease';
+            flash.style.opacity = '0';
+            setTimeout(() => flash.remove(), 500); // hapus elemen setelah animasi
+        }
+    }, 3000); // 5000ms = 5 detik
 </script>
 
 

@@ -157,7 +157,17 @@
       <div class="row">
         <div class="col-sm-6">
 
-      </div>
+        <?php if (session()->getFlashdata('success')): ?>
+<div class="alert alert-success">
+    <?= session()->getFlashdata('success') ?>
+</div>
+<?php elseif (session()->getFlashdata('error')): ?>
+<div class="alert alert-danger">
+    <?= session()->getFlashdata('error') ?>
+</div>
+<?php endif; ?>
+        
+        </div>
       </div>
     </div>
   </div>
@@ -311,84 +321,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 
-    <!--end::OverlayScrollbars Configure-->
-  
- 
-    <!-- <script>
-// Simpan state aktif terakhir
-let currentActiveMenu = localStorage.getItem('activeMenu') || 'menu-status';
-
-document.addEventListener('DOMContentLoaded', function() {
-  const navLinks = document.querySelectorAll('.sidebar-menu a.nav-link');
-  
-  // Fungsi untuk mengaktifkan menu
-  function setActiveMenu(menuId) {
-    // Hapus class active dari semua menu
-    navLinks.forEach(link => {
-      link.classList.remove('active');
-      link.parentElement.classList.remove('menu-open');
-    });
-    
-    // Tambahkan class active ke menu yang dipilih
-    const activeLink = document.getElementById(menuId);
-    if (activeLink) {
-      activeLink.classList.add('active');
-      activeLink.parentElement.classList.add('menu-open');
-      currentActiveMenu = menuId;
-      localStorage.setItem('activeMenu', menuId);
-    }
-  }
-
-  // Event listener untuk setiap menu
-  navLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      const menuId = this.id;
-      const contentType = this.getAttribute('data-content');
-      
-      console.log("menu klik", contentType)
-
-      setActiveMenu(menuId);
-      loadContent(contentType);
-    });
-  });
-  
-  // Fungsi load content
-// Fungsi load content yang diperbaiki
-function loadContent(contentType) {
-
-  console.log(document.getElementById('dynamic-content'));
-  // console.log("content tipe :", contentType)
-  // console.log("role :", "<?= strtolower(esc($user->role)) ?>")
-  fetch(`/load-content/${contentType}?role=<?= strtolower(esc($user->role)) ?>`)
-    .then(response => {
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        return response.text();
-    })
-    .then(html => {
-        document.getElementById('dynamic-content').innerHTML = html;
-    })
-    .catch(error => {
-        console.error('Fetch error:', error);
-        document.getElementById('dynamic-content').innerHTML = 
-            '<div class="alert alert-danger">Gagal memuat konten: ' + error.message + '</div>';
-    });
-}
-  
-  // Set menu aktif saat pertama kali load
-  setActiveMenu(currentActiveMenu);
-  
-  // Load konten sesuai menu aktif
-  const activeLink = document.querySelector(`#${currentActiveMenu}`);
-  if (activeLink) {
-    const contentType = activeLink.getAttribute('data-content');
-    loadContent(contentType);
-  }
-});
-</script> -->
-
-
-    <!--end::Script-->
   </body>
-  <!--end::Body-->
 </html>

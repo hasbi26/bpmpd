@@ -45,14 +45,7 @@
       crossorigin="anonymous"
     />
     <!--end::Third Party Plugin(OverlayScrollbars)-->
-    <!--begin::Third Party Plugin(Bootstrap Icons)-->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-      crossorigin="anonymous"
-    />
-    <!--end::Third Party Plugin(Bootstrap Icons)-->
-    <!--begin::Required Plugin(AdminLTE)-->
+
     <!-- <link rel="stylesheet" href="../css/adminlte.css" /> -->
     <link rel="stylesheet" href="<?= base_url('assets/adminlte/css/adminlte.min.css') ?>">
 
@@ -106,8 +99,11 @@
                           <!-- <div class="invalid-feedback">Please select a valid state.</div> -->
                         </div>
             <div class="input-group mb-3">
-            <input type="password" name="password" class="form-control" placeholder="Password" />
+            <input type="password" id="password" name="password" class="form-control" placeholder="Password" />
               <div class="input-group-text"><span class="bi bi-lock-fill"></span></div>
+              <div class="input-group-text" style="cursor:pointer;" id="togglePassword">
+              <i class="bi bi-eye"></i>
+            </div>
             </div>
             <!--begin::Row-->
             <div class="row">
@@ -146,6 +142,17 @@
       </div>
     </div>
     <!-- /.login-box -->
+
+        <!--begin::Third Party Plugin(Bootstrap Icons)-->
+        <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+      crossorigin="anonymous"
+    />
+    <!--end::Third Party Plugin(Bootstrap Icons)-->
+    <!--begin::Required Plugin(AdminLTE)-->
+
+
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
     <script
       src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"
@@ -186,6 +193,24 @@
         }
       });
     </script>
+
+<script>
+  const togglePassword = document.querySelector('#togglePassword');
+  const passwordInput = document.querySelector('#password');
+
+  togglePassword.addEventListener('click', function () {
+    // Ganti tipe input
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+
+    // Ganti ikon
+    this.innerHTML = type === 'password' 
+      ? '<i class="bi bi-eye"></i>' 
+      : '<i class="bi bi-eye-slash"></i>';
+  });
+</script>
+
+
     <!--end::OverlayScrollbars Configure-->
     <!--end::Script-->
   </body>

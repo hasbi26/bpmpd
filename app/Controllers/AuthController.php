@@ -93,6 +93,7 @@ if (!password_verify($password, $user['password'])) {
             'user_id'      => $user['user_id'],
             'username'     => $user['username'],
             'role'         => $user['role'],
+            'email'         => $user['email'],
             'role_id'      => $user['role_id'],
             'wilayah_nama' => $user['wilayah_nama'], // langsung dapat
             'logged_in'    => true
@@ -268,7 +269,7 @@ public function forgotPassword()
         // ✅ Hapus token agar tidak dipakai lagi
         $resetModel->delete($resetData['id']);
 
-        return redirect()->to('/forgot-password')->with('success', 'Password berhasil diubah. Silakan login kembali.');
+        return redirect()->to('/')->with('success', 'Password berhasil diubah. Silakan login kembali.');
     }
 
 }
