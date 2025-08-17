@@ -240,16 +240,11 @@ class SuperAdminController extends BaseController
 
     public function loginadmin()
     {
-
-
-        // Validasi input
         $rules = [
             'username' => 'required',
             'password' => 'required|min_length[6]',
             'role' => 'required|in_list[sa,admin]'
         ];
-
-        // $userAdminModel = new UserAdminModel();
 
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');

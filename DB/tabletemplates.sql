@@ -20,5 +20,8 @@ ADD updated_at TIMESTAMP NULL DEFAULT NULL;
 ALTER TABLE document_templates_desa 
 ADD is_active int NULL DEFAULT 1;
 
+
+ALTER TABLE document_templates_kecamatan 
+ADD updated_at TIMESTAMP NULL DEFAULT NULL;
 ALTER TABLE document_templates_kecamatan 
 ADD is_active int NULL DEFAULT 1;

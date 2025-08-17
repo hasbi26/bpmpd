@@ -82,7 +82,7 @@
                 </div>
             <?php endif; ?>
 
-        <form action="<?= base_url('/auth/login') ?>" method="post">
+        <form action="<?= base_url('/auth/login') ?>" method="POST">
 
             <div class="input-group mb-3">
               <input type="text" name="username" class="form-control" placeholder="UserName" value="<?= old('username') ?>" />

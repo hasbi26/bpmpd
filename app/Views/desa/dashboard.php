@@ -202,6 +202,15 @@
 
 function waitForElements(selectors, callback) {
     const foundElements = {};
+
+    // 🔑 langsung cek dulu sebelum observer
+    selectors.forEach(sel => {
+        if (document.querySelector(sel)) {
+            foundElements[sel] = true;
+            callback(sel, document.querySelector(sel));
+        }
+    });
+
     const observer = new MutationObserver(() => {
         selectors.forEach(sel => {
             if (!foundElements[sel] && document.querySelector(sel)) {
@@ -210,13 +219,14 @@ function waitForElements(selectors, callback) {
             }
         });
 
-        // kalau semua selector sudah ketemu → stop observer
         if (Object.keys(foundElements).length === selectors.length) {
             observer.disconnect();
         }
     });
+
     observer.observe(document.body, { childList: true, subtree: true });
 }
+
 
     </script>
 
@@ -274,7 +284,8 @@ function loadContent(contentType) {
     return;
   }
 
-  dynamicContent.innerHTML = '<div class="text-center py-5">Memuat data...</div>';
+  dynamicContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-success" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
 
   fetch(`/load-content/${contentType}?role=<?= strtolower(esc($user->role)) ?>`)
     .then(response => {
