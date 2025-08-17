@@ -3,12 +3,18 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\DocumentTemplatesDesaModel;
+
 
 class DesaController extends BaseController
 {
+    protected $templateDesaModel;
+
     public function __construct()
     {
         helper(['auth']);
+        $this->templateDesaModel = new DocumentTemplatesDesaModel();
+
     }
 
     public function dashboard()
@@ -25,4 +31,33 @@ class DesaController extends BaseController
 
         return view('desa/dashboard', $data);
     }
+
+    public function getDataDesa()
+    {
+        $request = service('request');
+        $model = new DocumentTemplatesDesaModel();
+
+        // Ambil parameter dari AJAX
+        $search   = $request->getGet('search');
+        $perPage  = $request->getGet('length') ?? 10;
+        $page     = $request->getGet('page') ?? 1;
+
+        $builder = $model->getActiveTemplates($search);
+
+        // Hitung total
+        $total = $builder->countAllResults(false);
+
+        // Ambil data dengan pagination
+        $data = $builder->paginate($perPage, 'default', $page);
+
+        // Siapkan response JSON untuk DataTable
+        return $this->response->setJSON([
+            'recordsTotal'    => $total,
+            'recordsFiltered' => $total,
+            'data'            => $data,
+        ]);
+    }
+
+
+
 }

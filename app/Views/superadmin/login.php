@@ -11,7 +11,7 @@
     <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
     <!--end::Accessibility Meta Tags-->
     <!--begin::Primary Meta Tags-->
-    <meta name="title" content="BPMPD | Login Page" />
+    <meta name="title" content="DPMPD | Login Page" />
     <meta name="author" content="ColorlibHQ" />
     <meta
       name="description"
@@ -19,7 +19,7 @@
     />
     <meta
       name="keywords"
-      content="BPMPD KABUPATEN SUMEDANG"
+      content="DPMPD KABUPATEN SUMEDANG"
     />
     <!--end::Primary Meta Tags-->
     <!--begin::Accessibility Features-->
@@ -64,8 +64,14 @@
     <div class="login-box">
       <div class="login-logo">
         <!-- <a href="../index2.html"><b>Admin</b>LTE</a> -->
-        <b>Login Page</b>
-
+        <!-- <b>Login Page</b> -->
+        <img src="<?= base_url('assets/adminlte/img/') ?>dpmd.png" style="width: 350px;" class="rounded mx-auto d-block" alt="...">
+        <!-- <img
+              src="<?= base_url('assets/adminlte/img/') ?>smd.png"
+              alt="Kabupaten Sumedang Logo"
+              class="brand-image opacity-75 shadow"
+              style="width: 40px;"
+            /> -->
       </div>
       <!-- /.login-logo -->
       <div class="card">

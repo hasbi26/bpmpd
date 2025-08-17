@@ -1,5 +1,7 @@
 <?php
 namespace App\Controllers;
+use App\Models\DocumentTemplatesDesaModel;
+use App\Models\DocumentTemplatesKecamatanModel;
 
 class ContentController extends BaseController
 {
@@ -7,18 +9,15 @@ class ContentController extends BaseController
     {
         helper(['form', 'url']);
         $this->session = \Config\Services::session();
+        $this->templateDesaModel = new DocumentTemplatesDesaModel();
+        $this->templateKecamatanModel = new DocumentTemplatesKecamatanModel();
         // $this->authLogger = new AuthLogger(\Config\Services::request());
 
     }
 
-
-
     public function loadContent($type)
     {
         try {
-
-
-
             $role = $this->request->getGet('role');
     
             log_message('info', "Mencoba load content: role={$role}, type={$type}");
@@ -29,7 +28,7 @@ class ContentController extends BaseController
             }
     
             // Validasi role yang diperbolehkan
-            $allowedRoles = ['desa', 'kecamatan', 'kabupaten'];
+            $allowedRoles = ['desa', 'kecamatan', 'kabupaten', 'sa', 'admin'];
             if (!in_array(strtolower($role), $allowedRoles)) {
                 throw new \CodeIgniter\Exceptions\PageNotFoundException('Role tidak valid');
             }
@@ -47,18 +46,25 @@ class ContentController extends BaseController
                 log_message('error', "View not found: {$viewPath}");
                 throw new \CodeIgniter\Exceptions\PageNotFoundException('View tidak ditemukan');
             }
-
             $namaWilayah = $this->session->get('wilayah_nama');
-
-
-            // dd("nama wil",$this->session->get('desa_nama'));
-    
-            // return view($viewPath, $role, $type);
+            $template    = null;
+            
+            if ($role == "desa") {
+                // pakai model desa
+                $template = $this->templateDesaModel->getActiveTemplates();                    
+            } elseif ($role == "kecamatan") {
+                // sementara kecamatan belum dipaginasi
+                $template = $this->templateKecamatanModel->getActiveTemplates();
+                // $pager = $this->templateKecamatanModel->pager;
+            }
+            
             return view($viewPath, [
-                'role' => $role,
-                'type' => $type,
-                'namaWilayah' => $namaWilayah
+                'role'        => $role,
+                'type'        => $type,
+                'namaWilayah' => $namaWilayah,
+                'templates'   => $template,
             ]);
+            
         
         } catch (\Exception $e) {
             log_message('error', 'Error in ContentController: ' . $e->getMessage());

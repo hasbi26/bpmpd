@@ -57,8 +57,7 @@
     <div class="login-box">
       <div class="login-logo">
         <!-- <a href="../index2.html"><b>Admin</b>LTE</a> -->
-        <b>Login Page</b>
-
+        <img src="<?= base_url('assets/adminlte/img/') ?>dpmd.png" style="width: 350px;" class="rounded mx-auto d-block" alt="...">
       </div>
       <!-- /.login-logo -->
       <div class="card">

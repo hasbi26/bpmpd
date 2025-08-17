@@ -196,6 +196,30 @@
     </div>
     <!--end::App Wrapper-->
     <!--begin::Script-->
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+function waitForElements(selectors, callback) {
+    const foundElements = {};
+    const observer = new MutationObserver(() => {
+        selectors.forEach(sel => {
+            if (!foundElements[sel] && document.querySelector(sel)) {
+                foundElements[sel] = true;
+                callback(sel, document.querySelector(sel));
+            }
+        });
+
+        // kalau semua selector sudah ketemu → stop observer
+        if (Object.keys(foundElements).length === selectors.length) {
+            observer.disconnect();
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+    </script>
+
+
+
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
     <script
       src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"
@@ -256,6 +280,14 @@ function loadContent(contentType) {
     })
     .then(html => {
       dynamicContent.innerHTML = html;
+
+      waitForElements(['#documentKecamatan'], (selector, el) => {
+        if (selector === '#documentKecamatan') {
+          LoadDocumentKecamatan(1, 10, "");
+        }
+        // ,'#searchInput','#perPage','#pagination'
+      });
+
       initDynamicContentScripts(); // Fungsi untuk inisialisasi komponen
     })
     .catch(error => {
@@ -318,6 +350,122 @@ document.addEventListener('DOMContentLoaded', function() {
   const initialContent = document.querySelector(`#${currentActiveMenu}`)?.dataset.content || 'status';
   loadContent(initialContent);
 });
+</script>
+
+
+<script>
+    setTimeout(function() {
+        let flash = document.getElementById('flashMessage');
+        if (flash) {
+            flash.style.transition = 'opacity 0.5s ease';
+            flash.style.opacity = '0';
+            setTimeout(() => flash.remove(), 500); // hapus elemen setelah animasi
+        }
+    }, 3000); // 5000ms = 5 detik
+</script>
+
+
+
+<script>
+    function LoadDocumentKecamatan(page = 1, length = 10, search = "") {
+    $.ajax({
+      url: "<?= site_url('document-kecamatan/getData') ?>",
+      method: "GET",
+      data: {
+        page: page,
+        length: length,
+        search: search
+      },
+      success: function (res) {
+        let rows = "";
+        let no = (page - 1) * length + 1;
+
+        if (res.data.length > 0) {
+          res.data.forEach(function (item) {
+            rows += `
+              <tr>
+                <td>${no++}</td>
+                <td>${item.title}</td>
+                <td>${item.deskripsi ?? '-'}</td>
+                <td><input type="file" name="file_${item.id}"></td>
+                <td>
+                  <button class="btn btn-sm btn-success">Upload</button>
+                </td>
+              </tr>
+            `;
+          });
+        } else {
+          rows = `<tr><td colspan="5" class="text-center">Tidak ada data</td></tr>`;
+        }
+
+        $("#documentKecamatan").html(rows);
+
+        // ✅ buat pagination bootstrap
+        let totalPages = Math.ceil(res.recordsTotal / length);
+        let pagination = `
+          <ul class="pagination pagination-sm m-0 float-end">
+        `;
+
+        // tombol prev
+        let prevPage = page > 1 ? page - 1 : 1;
+        pagination += `
+          <li class="page-item ${page === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${prevPage}">&laquo;</a>
+          </li>
+        `;
+
+        // nomor halaman
+        for (let i = 1; i <= totalPages; i++) {
+          pagination += `
+            <li class="page-item ${i === page ? 'active' : ''}">
+              <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>
+          `;
+        }
+
+        // tombol next
+        let nextPage = page < totalPages ? page + 1 : totalPages;
+        pagination += `
+          <li class="page-item ${page === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${nextPage}">&raquo;</a>
+          </li>
+        `;
+
+        pagination += `</ul>`;
+
+        $("#pagination").html(pagination);
+      }
+    });
+  }
+
+  // 🚀 handler pagination klik
+  $(document).on("click", "#pagination a.page-link", function (e) {
+    e.preventDefault();
+    let page = $(this).data("page");
+    let length = $("#perPage").val();
+    let search = $("#searchInput").val();
+    if (page) {
+      LoadDocumentKecamatan(page, length, search);
+    }
+  });
+
+  // 🚀 handler ganti jumlah per halaman
+  $(document).on("change", "#perPage", function () {
+    let length = $(this).val();
+    let search = $("#searchInput").val();
+    LoadDocumentKecamatan(1, length, search);
+  });
+
+  // 🚀 handler search
+  $(document).on("keyup", "#searchInput", function () {
+    let search = $(this).val();
+    let length = $("#perPage").val();
+    LoadDocumentKecamatan(1, length, search);
+  });
+
+  // 🚀 pertama kali load
+  LoadDocumentKecamatan(1, 10, "");
+
 </script>
 
 

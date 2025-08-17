@@ -197,7 +197,7 @@ class SuperAdminController extends BaseController
                     continue;
                 }
         
-                $passwordHash = password_hash($passwordRaw ?: 'P@ssw0rd', PASSWORD_BCRYPT);
+                $passwordHash = password_hash($passwordRaw ?: '12345', PASSWORD_BCRYPT);
                 // var_dump($userModel); exit;
                 // Gunakan save() untuk insert/update berdasarkan primary key
                 $userModel->insert([
@@ -256,7 +256,6 @@ class SuperAdminController extends BaseController
         $role = $this->request->getPost('role');
         $user = $this->userAdminModel->getUserByUsernameAndRole($username, $role);
 
-   //     dd($user);
 // Jika user tidak ditemukan
 if (!$user) {
     // Cek apakah username ada tapi role tidak sesuai
@@ -302,7 +301,7 @@ if (!password_verify($password, $user['password'])) {
             'username'     => $user['username'],
             'role'         => $user['role'],
             'role_id'      => $user['role_id'],
-            'wilayah_nama' => $user['wilayah_nama'], // langsung dapat
+            // 'wilayah_nama' => $user['wilayah_nama'], // langsung dapat
             'logged_in'    => true
         ];
     
@@ -310,20 +309,12 @@ if (!password_verify($password, $user['password'])) {
     
         $this->session->set($sessionData);
 
-
-
-
-
-        // return view('/desa/dashboard');
-
-        // return redirect()->to('/desa/dashboard');
-
         // Redirect berdasarkan role
         switch ($user['role']) {
             case 'sa':
-                return redirect()->to('/admindashboard');
+                return redirect()->to('/sa');
             case 'admin':
-                return redirect()->to('/kecamatan/dashboard');
+                return redirect()->to('/admindashboard');
             default:
                 return redirect()->to('/');
         }

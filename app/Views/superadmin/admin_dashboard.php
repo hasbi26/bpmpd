@@ -3,7 +3,7 @@
   <!--begin::Head-->
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>DPMPD | <?= esc(ucfirst($user->role)) ?> <?= esc(ucfirst($user->username)) ?></title>
+    <title>BPMPD | <?= esc(ucfirst($user['username']));?></title>
     <!--begin::Accessibility Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <meta name="color-scheme" content="light dark" />
@@ -92,8 +92,7 @@
             <!--end::Fullscreen Toggle-->
             <!--begin::User Menu Dropdown-->
             <li class="nav-item dropdown user-menu">
-                <!-- <a href="<?= base_url('auth/logout') ?>" class="btn btn-default btn-flat float-end">Sign out</a> -->
-                <a href="<?= base_url('auth/logout') ?>" class="btn btn-secondary btn-flat float-end">Sign out</a>
+                <a href="<?= base_url('auth/logoutadmin') ?>" class="btn btn-secondary btn-flat float-end">Sign out</a>
 
               </a>
             </li>
@@ -118,7 +117,6 @@
             />
             <!--end::Brand Image-->
             <!--begin::Brand Text-->
-            <!-- <span class="brand-text fw-light"><?= esc(ucfirst($user->role)) ?> <?= esc(ucfirst($user->username)) ?></span> -->
             <!--end::Brand Text-->
           </a>
           <!--end::Brand Link-->
@@ -138,7 +136,7 @@
       <li class="nav-item">
         <a href="#" class="nav-link" data-content="upload" id="menu-upload">
           <i class="nav-icon bi bi-clipboard-fill"></i>
-          <p>Document Upload</p>
+          <p>Create Templates</p>
         </a>
       </li>
       <li class="nav-item">
@@ -156,16 +154,15 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-6">
-
         <?php if (session()->getFlashdata('success')): ?>
-<div class="alert alert-success alert-dismissible fade show" role="alert" id="flashMessage">
-    <?= session()->getFlashdata('success') ?>
-</div>
-<?php elseif (session()->getFlashdata('error')): ?>
-<div class="alert alert-danger alert-dismissible fade show" role="alert" id="flashMessage">
-    <?= session()->getFlashdata('error') ?>
-</div>
-<?php endif; ?>
+          <div class="alert alert-success alert-dismissible fade show" role="alert" id="flashMessage">
+          <?= session()->getFlashdata('success') ?>
+        </div>
+        <?php elseif (session()->getFlashdata('error')): ?>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert" id="flashMessage">
+          <?= session()->getFlashdata('error') ?>
+        </div>
+        <?php endif; ?>
         
         </div>
       </div>
@@ -199,8 +196,8 @@
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
 
     <script>
-
-function waitForElements(selectors, callback) {
+  
+  function waitForElements(selectors, callback) {
     const foundElements = {};
     const observer = new MutationObserver(() => {
         selectors.forEach(sel => {
@@ -218,10 +215,8 @@ function waitForElements(selectors, callback) {
     observer.observe(document.body, { childList: true, subtree: true });
 }
 
-    </script>
-
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  </script>
 
 
     <script
@@ -274,23 +269,51 @@ function loadContent(contentType) {
     return;
   }
 
-  dynamicContent.innerHTML = '<div class="text-center py-5">Memuat data...</div>';
+  dynamicContent.innerHTML = '<div class="text-center py-5">Memuat data... dashboard</div>';
 
-  fetch(`/load-content/${contentType}?role=<?= strtolower(esc($user->role)) ?>`)
+  fetch(`/load-content/${contentType}?role=<?= esc(ucfirst($user['role'])) ?>`)
     .then(response => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.text();
     })
     .then(html => {
       dynamicContent.innerHTML = html;
+    waitForElements(['#desaTableBody', '#kecamatanTableBody'], (selector, el) => {
+        if (selector === '#desaTableBody') {
+            loadDesaTemplates();
+              // Fill Edit Desa Modal
+              document.getElementById('desaTableBody').addEventListener('click', function(e) {
+            if (e.target.closest('.btnEditDesa')) {
+                const btn = e.target.closest('.btnEditDesa');
+                document.getElementById('desa_id').value = btn.dataset.id;
+                document.getElementById('desa_title').value = btn.dataset.title;
+                document.getElementById('desa_deskripsi').value = btn.dataset.deskripsi;
+                       // ✅ set checkbox berdasarkan data-is_active
+                const isActiveCheckbox = document.getElementById('desa_is_active');
+                isActiveCheckbox.checked = btn.dataset.is_active === "1";
+            }
+        });
+        
+          }
+        if (selector === '#kecamatanTableBody') {
+            loadKecamatanTemplates();
 
-      waitForElements(['#documentDesa'], (selector, el) => {
-        if (selector === '#documentDesa') {
-          LoadDocumentDesa(1, 10, "");
+            document.getElementById('kecamatanTableBody').addEventListener('click', function(e) {
+            if (e.target.closest('.btnEditKecamatan')) {
+                const btn = e.target.closest('.btnEditKecamatan');
+                document.getElementById('kecamatan_id').value = btn.dataset.id;
+                document.getElementById('kecamatan_title').value = btn.dataset.title;
+                document.getElementById('kecamatan_deskripsi').value = btn.dataset.deskripsi;
+                                       // ✅ set checkbox berdasarkan data-is_active
+                const isActiveCheckbox = document.getElementById('kecamatan_is_active');
+                isActiveCheckbox.checked = btn.dataset.is_active === "1";
+            }
+        });
         }
-        // ,'#searchInput','#perPage','#pagination'
+
       });
-      initDynamicContentScripts(); // Fungsi untuk inisialisasi komponen
+    initDynamicContentScripts();
+
     })
     .catch(error => {
       console.error('Fetch error:', error);
@@ -344,6 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const contentType = this.dataset.content;
       setActiveMenu(menuId);
       loadContent(contentType);
+      console.log("contenttype", contentType)
     });
   });
 
@@ -352,8 +376,157 @@ document.addEventListener('DOMContentLoaded', function() {
   const initialContent = document.querySelector(`#${currentActiveMenu}`)?.dataset.content || 'status';
   loadContent(initialContent);
 });
+
 </script>
 
+<script>
+function submitTemplateForm(event, type, id) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    fetch(`/templates/${type}/update/${id}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadContent('templates'); // Reload content setelah update
+        } else {
+            alert(data.message || 'Terjadi kesalahan');
+        }
+    });
+}
+</script>
+
+
+<script>
+function loadDesaTemplates() {
+    fetch('<?= base_url('templates/get_desa') ?>')
+        .then(response => response.json())
+        .then(res => {
+            let tbody = document.getElementById('desaTableBody');
+            tbody.innerHTML = '';
+
+            if (res.success && res.data.length > 0) {
+                let no = 1;
+                res.data.forEach(desa => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${no++}</td>
+                            <td>${desa.title}</td>
+                            <td>${desa.deskripsi ?? ''}</td>
+                            <td>${desa.username}</td>
+                            <td>
+                            ${desa.is_active == 1 
+                            ? '<i class="bi bi-check2-square text-success"></i>' 
+                            : '<i class="bi bi-dash-square text-danger"></i>'}
+                            </td>
+                            <td>${desa.created_at}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm btnEditDesa" 
+                                    data-id="${desa.id}" 
+                                    data-title="${desa.title}" 
+                                    data-is_active="${desa.is_active}" 
+                                    data-deskripsi="${desa.deskripsi ?? ''}"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalEditDesa">
+                                    <i class="bi bi-pencil-square"></i>
+                                    
+                                </button>
+                                <a href="<?= base_url('templates/delete_desa/') ?>${desa.id}" 
+                                   class="btn btn-danger btn-sm" 
+                                   onclick="return confirm('Hapus template ini?')">
+                                   <i class="bi bi-trash"></i>                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">Tidak ada data</td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('desaTableBody').innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-danger">Gagal memuat data</td>
+                </tr>
+            `;
+        });
+      }
+
+function loadKecamatanTemplates() {
+    fetch('<?= base_url('templates/get_kecamatan') ?>')
+        .then(response => response.json())
+        .then(res => {
+            let tbody = document.getElementById('kecamatanTableBody');
+            tbody.innerHTML = '';
+
+            if (res.success && res.data.length > 0) {
+                let no = 1;
+                res.data.forEach(kecamatan => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${no++}</td>
+                            <td>${kecamatan.title}</td>
+                            <td>${kecamatan.deskripsi ?? ''}</td>
+                            <td>${kecamatan.username}</td>
+                            <td>
+                            ${kecamatan.is_active == 1 
+                            ? '<i class="bi bi-check2-square text-success"></i>' 
+                            : '<i class="bi bi-dash-square text-danger"></i>'}
+                            </td>
+                            <td>${kecamatan.created_at}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm btnEditKecamatan" 
+                                    data-id="${kecamatan.id}" 
+                                    data-title="${kecamatan.title}" 
+                                    data-is_active="${kecamatan.is_active}" 
+                                    data-deskripsi="${kecamatan.deskripsi ?? ''}"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalEditKecamatan">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <a href="<?= base_url('templates/delete_kecamatan/') ?>${kecamatan.id}" 
+                                   class="btn btn-danger btn-sm" 
+                                   onclick="return confirm('Hapus template ini?')">
+                                   <i class="bi bi-trash"></i>                                </a>
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">Tidak ada data</td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('kecamatanTableBody').innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-danger">Gagal memuat data</td>
+                </tr>
+            `;
+        });
+      }
+
+// Panggil saat halaman dimuat
+document.addEventListener('DOMContentLoaded', loadKecamatanTemplates);
+document.addEventListener('DOMContentLoaded', loadDesaTemplates);
+</script>
 
 <script>
     setTimeout(function() {
@@ -365,110 +538,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 3000); // 5000ms = 5 detik
 </script>
-
-
-<script>
-    function LoadDocumentDesa(page = 1, length = 10, search = "") {
-    $.ajax({
-      url: "<?= site_url('document-desa/getData') ?>",
-      method: "GET",
-      data: {
-        page: page,
-        length: length,
-        search: search
-      },
-      success: function (res) {
-        let rows = "";
-        let no = (page - 1) * length + 1;
-
-        if (res.data.length > 0) {
-          res.data.forEach(function (item) {
-            rows += `
-              <tr>
-                <td>${no++}</td>
-                <td>${item.title}</td>
-                <td>${item.deskripsi ?? '-'}</td>
-                <td><input type="file" name="file_${item.id}"></td>
-                <td>
-                  <button class="btn btn-sm btn-success">Upload</button>
-                </td>
-              </tr>
-            `;
-          });
-        } else {
-          rows = `<tr><td colspan="5" class="text-center">Tidak ada data</td></tr>`;
-        }
-
-        $("#documentDesa").html(rows);
-
-        // ✅ buat pagination bootstrap
-        let totalPages = Math.ceil(res.recordsTotal / length);
-        let pagination = `
-          <ul class="pagination pagination-sm m-0 float-end">
-        `;
-
-        // tombol prev
-        let prevPage = page > 1 ? page - 1 : 1;
-        pagination += `
-          <li class="page-item ${page === 1 ? 'disabled' : ''}">
-            <a class="page-link" href="#" data-page="${prevPage}">&laquo;</a>
-          </li>
-        `;
-
-        // nomor halaman
-        for (let i = 1; i <= totalPages; i++) {
-          pagination += `
-            <li class="page-item ${i === page ? 'active' : ''}">
-              <a class="page-link" href="#" data-page="${i}">${i}</a>
-            </li>
-          `;
-        }
-
-        // tombol next
-        let nextPage = page < totalPages ? page + 1 : totalPages;
-        pagination += `
-          <li class="page-item ${page === totalPages ? 'disabled' : ''}">
-            <a class="page-link" href="#" data-page="${nextPage}">&raquo;</a>
-          </li>
-        `;
-
-        pagination += `</ul>`;
-
-        $("#pagination").html(pagination);
-      }
-    });
-  }
-
-  // 🚀 handler pagination klik
-  $(document).on("click", "#pagination a.page-link", function (e) {
-    e.preventDefault();
-    let page = $(this).data("page");
-    let length = $("#perPage").val();
-    let search = $("#searchInput").val();
-    if (page) {
-      LoadDocumentDesa(page, length, search);
-    }
-  });
-
-  // 🚀 handler ganti jumlah per halaman
-  $(document).on("change", "#perPage", function () {
-    let length = $(this).val();
-    let search = $("#searchInput").val();
-    LoadDocumentDesa(1, length, search);
-  });
-
-  // 🚀 handler search
-  $(document).on("keyup", "#searchInput", function () {
-    let search = $(this).val();
-    let length = $("#perPage").val();
-    LoadDocumentDesa(1, length, search);
-  });
-
-  // 🚀 pertama kali load
-  LoadDocumentDesa(1, 10, "");
-
-</script>
-
 
 
 
