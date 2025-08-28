@@ -26,7 +26,6 @@
         <th style="width: 50px">No</th>
         <th>Nama Dokumen</th>
         <th>Deskripsi</th> 
-        <th>Pilih Dokumen</th>
         <th style="width: 120px">Aksi</th>
       </tr>
     </thead>
@@ -39,5 +38,41 @@
 
 <div class="mt-2" id="pagination"></div>
 
+</div>
+
+
+
+
+<div class="modal fade" id="modalUploadDesa" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <form action="<?= base_url('templates/upload_files') ?>" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="id_template" id="id_template">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Detail Template : <span id="uploadDesaTitle"></span></h5>
+        </div>
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label>Earmarked</label>
+            <input type="text" id="earmarked_display" class="form-control">
+            <input type="hidden" name="earmarked" id="earmarked">
+          </div>
+          <div class="mb-3">
+          <label>Non Earmarked</label>
+            <input type="text" id="non_earmarked_display" class="form-control">
+            <input type="hidden" name="non_earmarked" id="non_earmarked">
+          </div>
+
+          <div id="uploadDesaBody"></div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 

@@ -2,16 +2,20 @@
 
 use App\Models\DocumentTemplatesDesaModel;
 use App\Models\DocumentTemplatesKecamatanModel;
+use App\Models\DocumentTemplatesModel;
+
 
 class TemplateController extends BaseController
 {
     protected $templateDesaModel;
     protected $templateKecamatanModel;
+    protected $templateDocumentModel;
 
     public function __construct()
     {
         $this->templateDesaModel = new DocumentTemplatesDesaModel();
         $this->templateKecamatanModel = new DocumentTemplatesKecamatanModel();
+        $this->templateDocumentModel = new DocumentTemplatesModel();
     }
 
     // DESA TEMPLATES
@@ -29,184 +33,242 @@ class TemplateController extends BaseController
         return view('templates/create', ['type' => 'desa']);
     }
 
-    public function storeDesa()
-{
-    $rules = [
-        'title' => 'required|max_length[255]',
-        'deskripsi' => 'permit_empty'
-    ];
-
-    if (!$this->validate($rules)) {
+    public function storeTemplates()
+    {
+            // Ambil data dari form
+            $title      = trim((string) $this->request->getPost('title'));
+            $deskripsi  = (string) $this->request->getPost('deskripsi');
+            $desa       = (array) $this->request->getPost('desa');       // array of strings
+            $kecamatan  = (array) $this->request->getPost('kecamatan');  // array of strings
+    
+            // Ambil user id (sesuaikan key session-mu)
+            $userId = session()->get('user_id') ?? 0;
+    
+            // Validasi sederhana
+            if ($title === '') {
+                session()->setFlashdata('error', 'Judul (title) wajib diisi.');
+                return redirect()->back()->withInput();
+            }
+    
+            // Koneksi DB (CI4)
+            $db = \Config\Database::connect();
+    
+            // Mulai transaksi
+            $db->transStart();
+    
+            // 1) Insert ke tabel induk: document_templates
+            $db->table('document_templates')->insert([
+                'title'       => $title,
+                'deskripsi'   => $deskripsi,
+                'created_by'  => $userId,
+                'created_at'  => date('Y-m-d H:i:s'),
+                'is_active'   => 1,
+                // 'earmarked'   => null,        // opsional, biarkan NULL jika tidak dari form
+                // 'non_earmarked' => null,      // opsional
+            ]);
+    
+            $templateId = $db->insertID(); // id dari insert induk
+    
+            // 2) Siapkan batch detail (desa & kecamatan) lalu insertBatch
+            $detailRows = [];
+    
+            // Dari tab Desa
+            foreach ($desa as $d) {
+                if (!is_string($d)) continue;
+                $nama = trim($d);
+                if ($nama === '') continue;
+    
+                $detailRows[] = [
+                    'nama_file'   => $nama,
+                    'role'        => 'desa',
+                    'id_templates'=> $templateId,
+                ];
+            }
+    
+            // Dari tab Kecamatan
+            foreach ($kecamatan as $k) {
+                if (!is_string($k)) continue;
+                $nama = trim($k);
+                if ($nama === '') continue;
+    
+                $detailRows[] = [
+                    'nama_file'   => $nama,
+                    'role'        => 'kecamatan',
+                    'id_templates'=> $templateId,
+                ];
+            }
+    
+            if (!empty($detailRows)) {
+                $db->table('document_templates_detail')->insertBatch($detailRows);
+            }
+    
+            // Selesaikan transaksi
+            $db->transComplete();
+    
+            if ($db->transStatus() === false) {
+                session()->setFlashdata('error', 'Gagal menyimpan template.');
+                return redirect()->back()->withInput();
+            }
+    
+            session()->setFlashdata('success', 'Template berhasil disimpan.');
             return redirect()->to('/admindashboard') // ganti sesuai route dashboard kamu
-            ->with('error', 'Template desa gagal di buat');
-    }
-
-    $data = [
-        'title' => $this->request->getPost('title'),
-        'deskripsi' => $this->request->getPost('deskripsi'),
-        'created_by' => session('user_id')
-    ];
-    
-
-    $this->templateDesaModel->save($data);
-    
-    return redirect()->to('/admindashboard') // ganti sesuai route dashboard kamu
-    ->with('success', 'Template desa berhasil dibuat');
-}
-
-// Lakukan hal yang sama untuk updateDesa, storeKecamatan, dll
-
-    // KECAMATAN TEMPLATES (Mirip dengan Desa)
-    public function indexKecamatan()
-    {
-        $data = [
-            'templates' => $this->templateKecamatanModel->getTemplatesByUser(session('user_id')),
-            'type' => 'kecamatan'
-        ];
-        return view('templates/index', $data);
-    }
-
-    public function createKecamatan()
-    {
-        return view('templates/create', ['type' => 'kecamatan']);
-    }
-
-    public function storeKecamatan()
-    {
-        $rules = [
-            'title' => 'required|max_length[255]',
-            'deskripsi' => 'permit_empty'
-        ];
-
-        if (!$this->validate($rules)) {
-            return redirect()->to('/admindashboard') // ganti sesuai route dashboard kamu
-            ->with('errors', $this->validator->getErrors());
+            ->with('success', 'Template documents berhasil dibuat');
+        
         }
+    
 
-        $data = [
-            'title' => $this->request->getPost('title'),
-            'deskripsi' => $this->request->getPost('deskripsi'),
-            'created_by' => session('user_id')
-        ];
-
-        $this->templateKecamatanModel->save($data);
-        return redirect()->to('/admindashboard') // ganti sesuai route dashboard kamu
-        ->with('success', 'Template kecamatan berhasil dibuat');
-    }
-
-    // EDIT & DELETE (Contoh untuk Desa)
-    public function editDesa($id)
-    {
-        $template = $this->templateDesaModel->find($id);
-        return view('templates/edit', ['template' => $template, 'type' => 'desa']);
-    }
-
-    public function updateDesa()
-    {
-        $rules = [
-            'title' => 'required|max_length[255]',
-            'deskripsi' => 'permit_empty'
-        ];
-
-        if (!$this->validate($rules)) {
-            return redirect()->to('/admindashboard')->with('errors', $this->validator->getErrors());
-        }
-
-        $data = [
-            'id' => $this->request->getPost('id'),
-            'title' => $this->request->getPost('title'),
-            'deskripsi' => $this->request->getPost('deskripsi'),
-            'is_active' => ($this->request->getPost('is_active') == null) ? 0 : 1
-        ];
-
-        $this->templateDesaModel->save($data);
-        return redirect()->to('/admindashboard')->with('success', 'Template desa berhasil diupdate');
-    }
-
-
-    public function updateKecamatan()
-    {
-        $rules = [
-            'title' => 'required|max_length[255]',
-            'deskripsi' => 'permit_empty'
-        ];
-
-        if (!$this->validate($rules)) {
-            return redirect()->to('/admindashboard')->with('errors', $this->validator->getErrors());
-        }
-
-        $data = [
-            'id' => $this->request->getPost('id'),
-            'title' => $this->request->getPost('title'),
-            'deskripsi' => $this->request->getPost('deskripsi'),
-            'is_active' => ($this->request->getPost('is_active') == null) ? 0 : 1
-        ];
-
-        $this->templateKecamatanModel->save($data);
-        return redirect()->to('/admindashboard')->with('success', 'Template Kecamatan berhasil diupdate');
-    }
-
-    public function deleteDesa($id)
-    {
-        $this->templateDesaModel->delete($id);
-        return redirect()->to('/admindashboard')->with('success', 'Template desa berhasil dihapus');
-    }
-
-    public function deleteKecamatan($id)
-    {
-        $this->templateKecamatanModel->delete($id);
-        return redirect()->to('/admindashboard')->with('success', 'Template kecamatan berhasil dihapus');
-    }
-
-
-    // Di dalam TemplateController
-public function loadTemplateContent($type)
+public function getDocumentTemplates()
 {
-    if ($type === 'desa') {
-        $data['templates'] = $this->templateDesaModel->getTemplatesByUser(session('user_id'));
-    } else {
-        $data['templates'] = $this->templateKecamatanModel->getTemplatesByUser(session('user_id'));
-    }
-    
-    $data['type'] = $type;
-    
-    return view('templates/partials/list', $data);
-}
+    $request = service('request');
+    $model   = new DocumentTemplatesModel();
 
-public function loadTemplateForm($type, $id = null)
-{
-    if ($id) {
-        $model = $type === 'desa' ? $this->templateDesaModel : $this->templateKecamatanModel;
-        $data['template'] = $model->find($id);
-    }
-    
-    $data['type'] = $type;
-    $view = $id ? 'templates/partials/edit_form' : 'templates/partials/create_form';
-    
-    return view($view, $data);
-}
+    $search   = $request->getGet('search') ?? null;
+    $perPage  = (int) ($request->getGet('length') ?? 10);
+    $page     = (int) ($request->getGet('page') ?? 1);
+    $start    = ($page - 1) * $perPage; // 🔑 hitung offset manual
 
+    // Total data
+    $total = $model->getTemplatesQuery(session('user_id'), $search)->countAllResults();
 
-public function getDesaTemplates()
-{
-    $desaTemplates = $this->templateDesaModel->getTemplatesWithUser(session('user_id'));
+    // Data per halaman
+    $data = $model->getTemplatesQuery(session('user_id'), $search)
+                  ->get($perPage, $start)
+                  ->getResult();
 
     return $this->response->setJSON([
-        'success' => true,
-        'data' => $desaTemplates
+        'draw'            => $page,
+        'recordsTotal'    => $total,
+        'recordsFiltered' => $total,
+        'data'            => $data,
     ]);
+
 }
 
 
 public function getKecamatanTemplates(){
-    $kecamatanTemplates = $this->templateKecamatanModel->getTemplatesWithUser(session('user_id'));
+
+
+    $request = service('request');
+    $model = new DocumentTemplatesKecamatanModel();
+
+    // Ambil parameter dari AJAX
+    $search   = $request->getGet('search');
+    $perPage  = $request->getGet('length') ?? 10;
+    $page     = $request->getGet('page') ?? 1;
+
+    $builder = $model->getTemplatesWithUser(session('user_id'), $search);
+
+    // Hitung total
+    $total = $builder->countAllResults(false);
+
+    // Ambil data dengan pagination
+    $data = $builder->paginate($perPage, 'default', $page);
+
+    // Siapkan response JSON untuk DataTable
     return $this->response->setJSON([
-        'success' => true,
-        'data' => $kecamatanTemplates
+        'recordsTotal'    => $total,
+        'recordsFiltered' => $total,
+        'data'            => $data,
     ]);
 
 }
 
+
+public function editDocument($id)
+{
+    $model = new DocumentTemplatesModel();
+    $template = $model->getTemplateWithDetail($id);
+
+    return $this->response->setJSON($template);
+}
+
+public function update_templates()
+{
+    $request = service('request');
+    $db      = \Config\Database::connect();
+
+    $id         = $request->getPost('id');
+    $title      = $request->getPost('title');
+    $deskripsi  = $request->getPost('deskripsi');
+    $is_active  = $request->getPost('is_active'); // 1 atau 0
+    $desa       = $request->getPost('desa') ?? [];
+    $kecamatan  = $request->getPost('kecamatan') ?? [];
+
+    // Mulai transaksi biar aman
+    $db->transStart();
+
+    // 🔹 Update parent document_templates
+    $db->table('document_templates')
+        ->where('id', $id)
+        ->update([
+            'title'      => $title,
+            'deskripsi'  => $deskripsi,
+            'is_active'  => $is_active,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+
+    // 🔹 Hapus detail lama
+    $db->table('document_templates_detail')->where('id_templates', $id)->delete();
+
+    // 🔹 Insert ulang detail desa
+    foreach ($desa as $d) {
+        if (!empty($d)) {
+            $db->table('document_templates_detail')->insert([
+                'id_templates' => $id,
+                'nama_file'   => $d,
+                'role'        => 'desa',
+            ]);
+        }
+    }
+
+    // 🔹 Insert ulang detail kecamatan
+    foreach ($kecamatan as $k) {
+        if (!empty($k)) {
+            $db->table('document_templates_detail')->insert([
+                'id_templates' => $id,
+                'nama_file'   => $k,
+                'role'        => 'kecamatan',
+            ]);
+        }
+    }
+
+    $db->transComplete();
+
+    if ($db->transStatus() === false) {
+        $error = $db->error();
+        return redirect()->to('/admindashboard')->with('error', 'Update gagal: ' . ($error['message'] ?? 'Transaksi gagal.'));
+    }
+
+    // session()->setFlashdata('success', 'Template berhasil disimpan.');
+    return redirect()->to('/admindashboard') // ganti sesuai route dashboard kamu
+    ->with('success', 'Template documents berhasil diupdate');
+
+}
+
+public function deleteDesa($id){
+
+    $db      = \Config\Database::connect();
+
+    $db->transStart();
+    $db->table('document_templates')->where('id', $id)->delete();
+    $db->table('document_templates_detail')->where('id_templates', $id)->delete();
+
+    $db->transComplete();
+
+    if ($db->transStatus() === false) {
+        $error = $db->error();
+        return redirect()->to('/admindashboard')->with('error', 'hapus data gagal: ' . ($error['message'] ?? 'Transaksi gagal.'));
+    }
+
+    // session()->setFlashdata('success', 'Template berhasil disimpan.');
+    return redirect()->to('/admindashboard') // ganti sesuai route dashboard kamu
+    ->with('success', 'Template documents berhasil dihapus');
+}
+
+
+public function getDocumentDesa(){
+    
+}
 
 
 }

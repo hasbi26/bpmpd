@@ -3,7 +3,7 @@
   <!--begin::Head-->
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>BPMPD | <?= esc(ucfirst($user->role)) ?> <?= esc(ucfirst($user->username)) ?></title>
+    <title>DPMPD | <?= esc(ucfirst($user->role)) ?> <?= esc(ucfirst($user->username)) ?></title>
     <!--begin::Accessibility Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <meta name="color-scheme" content="light dark" />
@@ -138,7 +138,13 @@
       <li class="nav-item">
         <a href="#" class="nav-link" data-content="upload" id="menu-upload">
           <i class="nav-icon bi bi-clipboard-fill"></i>
-          <p>Document Upload</p>
+          <p>Verifikasi</p>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link" data-content="profil" id="menu-profil">
+          <i class="nav-iconbi bi-person-circle"></i>
+          <p>Profil Desa</p>
         </a>
       </li>
       <li class="nav-item">
@@ -158,11 +164,11 @@
         <div class="col-sm-6">
 
         <?php if (session()->getFlashdata('success')): ?>
-<div class="alert alert-success">
+<div class="alert alert-success alert-dismissible fade show" role="alert" id="flashMessage">
     <?= session()->getFlashdata('success') ?>
 </div>
 <?php elseif (session()->getFlashdata('error')): ?>
-<div class="alert alert-danger">
+<div class="alert alert-danger alert-dismissible fade show" role="alert" id="flashMessage">
     <?= session()->getFlashdata('error') ?>
 </div>
 <?php endif; ?>
@@ -188,7 +194,7 @@
         <!--end::To the end-->
         <!--begin::Copyright-->
         <strong>
-          BPMPD | Kabupaten Sumedang        </strong>
+          DPMPD | Kabupaten Sumedang        </strong>
         
         <!--end::Copyright-->
       </footer>
@@ -197,6 +203,54 @@
     <!--end::App Wrapper-->
     <!--begin::Script-->
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
+
+
+    <script>
+
+function waitForElements(selectors, callback) {
+    const foundElements = {};
+
+    // 🔑 langsung cek dulu sebelum observer
+    selectors.forEach(sel => {
+        if (document.querySelector(sel)) {
+            foundElements[sel] = true;
+            callback(sel, document.querySelector(sel));
+        }
+    });
+
+    const observer = new MutationObserver(() => {
+        selectors.forEach(sel => {
+            if (!foundElements[sel] && document.querySelector(sel)) {
+                foundElements[sel] = true;
+                callback(sel, document.querySelector(sel));
+            }
+        });
+
+        if (Object.keys(foundElements).length === selectors.length) {
+            observer.disconnect();
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+
+
+    </script>
+
+
+<script>
+  function formatRupiahModal(angka) {
+  if (!angka) return "0";
+  return angka
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
     <script
       src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"
       crossorigin="anonymous"
@@ -256,6 +310,31 @@ function loadContent(contentType) {
     })
     .then(html => {
       dynamicContent.innerHTML = html;
+
+      waitForElements(['#uploadDesaBody','#desaStatusBody','#uploadKecamatanBody','#KecamatanStatusBody', '#modalStatusDetailKabupaten', '#profilDesa'], (selector, el) => {
+       if (selector === '#uploadDesaBody') {
+           modalDesa();
+        }
+        if (selector === '#desaStatusBody') {
+          loadDesaStatus();
+        }
+        if (selector === '#uploadKecamatanBody') {
+          ModalDesaDetailStatus();
+        }
+        if (selector === '#KecamatanStatusBody') {
+          loadKecamatanStatus();
+        }
+        if (selector === '#modalStatusDetailKabupaten') {
+          ModalKabupatenDetailStatus();
+        }
+        if (selector === '#profilDesa') {
+          loadProfilDesa();
+        }
+      });
+
+
+
+
       initDynamicContentScripts(); // Fungsi untuk inisialisasi komponen
     })
     .catch(error => {
@@ -319,6 +398,617 @@ document.addEventListener('DOMContentLoaded', function() {
   loadContent(initialContent);
 });
 </script>
+
+
+<script>
+function loadDesaStatus(page = 1, search = '') {
+    $.ajax({
+        url: "<?= base_url('document-kabupaten/document-status') ?>",
+        type: "GET",
+        data: {
+            page: page,
+            length: 10,
+            search: search
+        },
+        dataType: "json",
+        success: function(res) {
+            let tbody = $("#desaStatusBody");
+            // $("#DesaStatus").val(res.data[0].status);
+
+            tbody.empty();
+
+            if (res.data.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">Belum ada data</td></tr>');
+                return;
+            }
+
+       res.data.forEach(function(item) {
+    // Tentukan class badge
+    let statusClass = "text-bg-info"; // default
+    if (item.status_kecamatan === "approved") {
+        statusClass = "text-bg-success";
+    } else if (item.status_kecamatan === "rejected") {
+        statusClass = "text-bg-danger";
+    } else if (item.status_kecamatan === "submitted" || item.status_kecamatan === "resubmitted") {
+        statusClass = "text-bg-info";
+    }
+
+    // Capitalize huruf pertama
+          let statusText = item.status_kecamatan 
+              ? item.status_kecamatan.charAt(0).toUpperCase() + item.status_kecamatan.slice(1) 
+              : "";
+
+          let row = `
+              <tr>
+                  <td>${item.no}</td>
+                  <td>${item.tanggal}</td>
+                  <td>${item.title}</td>
+                  <td>${item.nama}</td>
+                  <td>${item.kecamatan}</td>
+                  <td><span class="badge ${statusClass}">${statusText}</span></td>
+                  <td><button class="btn btn-sm btn-success btnStatusDetailDesa" data-desa="${item.desa_id}" data-template="${item.template_id}" data-id="${item.id}">Detail</button></td>
+              </tr>
+          `;
+          tbody.append(row);
+      });
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+        }
+    });
+}
+// handlers
+$(document).on("click", "#paginationStatus a.page-link", function(e){
+  e.preventDefault();
+  const page = Number($(this).data("page")) || 1;
+  const length = Number($("#perPageStatus").val() || 10);
+  const search = $("#searchInputStatus").val() || '';
+  loadDesaStatus(page, length, search);
+});
+
+$(document).on("change", "#perPageStatus", function(){
+  const length = Number($(this).val() || 10);
+  const search = $("#searchInputStatus").val() || '';
+  loadDesaStatus(1, length, search);
+});
+
+$(document).on("keyup", "#searchInputStatus", function(){
+  const search = $(this).val() || '';
+  const length = Number($("#perPageStatus").val() || 10);
+  loadDesaStatus(1, length, search);
+});
+
+// load pertama kali
+loadDesaStatus(1, 10, "");
+</script>
+
+
+<script>
+function modalDesa(){
+  $(document).on("click", ".btnUploadDesa", function () {
+    let id = $(this).data("id");
+    $("#id_template").val(id);
+    $.get(`/templates/detail/${id}`, function (res) {
+        if (res.error) {
+            alert(res.error);
+            return;
+        }
+
+        // isi modal dengan data yang didapat
+        $("#uploadDesaTitle").text(res.template.title);
+        $("#earmarked").val(res.template.earmarked ?? '');
+        $("#non_earmarked").val(res.template.non_earmarked ?? '');
+        
+        if(res.submission){
+          $("#earmarked").val(res.submission.earmarked)
+          $("#non_earmarked").val(res.submission.non_earmarked ?? '');
+        }
+
+        // render input upload untuk detail
+        let html = "";
+        if (res.details.length > 0) {
+            res.details.forEach(function (d) {
+                html += `
+                  <div class="mb-2">
+                    <label>${d.nama_file ?? 'Upload File'}</label>
+                    <input type="file" name="files[${d.id}]" class="form-control" accept="application/pdf">
+                  </div>`;
+            });
+        } else {
+            html = `<p class="text-muted">Belum ada detail untuk role ini.</p>`;
+        }
+        $("#uploadDesaBody").html(html);
+
+        // tampilkan modal
+        $("#modalUploadDesa").modal("show");
+    });
+});
+
+}
+
+$(document).on("submit", "#modalUploadDesa form", function(e){
+    e.preventDefault();
+
+    let form = $(this)[0];
+    let data = new FormData(form);
+
+    $.ajax({
+        url: form.action,
+        method: form.method,
+        data: data,
+        processData: false,
+        contentType: false,
+        success: function(res){
+            if(res.error){
+                alert(res.error);
+            } else {
+                alert(res.message);
+                $("#modalUploadDesa").modal("hide");
+            }
+        },
+        error: function(xhr){
+            alert("Terjadi kesalahan server");
+        }
+    });
+});
+
+
+
+</script>
+
+<script>
+function modalKecamatan(){
+  $(document).on("click", ".btnUploadKecamatan", function () {
+    let id = $(this).data("id");
+    let template = $(this).data("template");
+    let desa = $(this).data("desa");
+    var base_url = "<?= base_url() ?>";
+    $.get(`/templates/kecamatan/detail/${id}/${template}/${desa}/`, function (res) {
+      if (res.error) {
+        alert(res.error);
+        return;
+      }
+        $("#id_template").val(res.template.id);
+        // isi modal dengan data yang didapat
+        $("#desaTitle").text(res.desaTitle.nama ?? '');
+        $("#uploadKecamatanTitle").text(res.template.title);
+        $("#earmarked").val(res.template.earmarked ?? '');
+        $("#non_earmarked").val(res.template.non_earmarked ?? '');
+        $("#status_kecamatan").val(res.submission.status_desa ?? '');
+        $("#desa_id").val(res.submission.desa_id ?? '');
+        if(res.submission){
+          $("#earmarked").val(res.submission.earmarked)
+          $("#non_earmarked").val(res.submission.non_earmarked ?? '');
+        }
+        let filesHtml = "<table class='table table-bordered'><thead><tr><th>Upload Desa</th></tr></thead><tbody>";
+        res.files.forEach(f => {
+          const isPdf = f.file_path.toLowerCase().endsWith('.pdf');
+          // Replace spaces in file_path and file_name for cleaner URLs
+          const cleanFilePath = f.file_path.replace(/\s+/g, '_');
+          const cleanFileName = f.file_name.replace(/\s+/g, '_');
+          const linkUrl = isPdf ? `${base_url + cleanFilePath}` : `${base_url + cleanFilePath}`;
+          filesHtml += `
+            <tr>
+              <td><a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${cleanFileName}</a></td>
+            </tr>
+          `;
+        });
+        filesHtml += "</tbody></table>";
+
+        $("#uploadKecamatanBody").html(filesHtml);
+        $("#modalUploadKecamatan").modal("show");
+    });
+});
+
+}
+</script>
+
+
+<script>
+function ModalDesaDetailStatus(){
+
+  $(document).on("click", ".btnStatusDetailDesa", function () {
+    let id = $(this).data("id");
+    let template = $(this).data("template")
+    let desa = $(this).data("desa")
+    $("#id_submmision").val(id);
+    var base_url = "<?= base_url() ?>";
+    $.ajax({
+    url: base_url + "/kabupaten/detail/" +id+"/"+template+"/"+desa,
+
+    // /${template}/${desa}/
+    method: "GET",
+    dataType: "json",
+    success: function(res) {
+      if (res.submission) {
+        $("#uploadDesaTitle").text(res.submission.title);
+        $("#id_template").val(template);
+        $("#desa_id").val(desa);
+        $("#earmarked").val(formatRupiahModal(res.submission.earmarked));
+        $("#non_earmarked").val(formatRupiahModal(res.submission.non_earmarked));
+        $("#status_kecamatan").val(res.submission.status_kabupaten);
+        $("#keterangan").val(res.submission.keterangan_kecamatan);
+        
+        
+        let filesHtml = "<table class='table table-bordered'><thead><tr><th>Document upload</th></tr></thead><tbody>";
+        res.files.forEach(f => {
+          const isPdf = f.file_path.toLowerCase().endsWith('.pdf');
+          // Replace spaces in file_path and file_name for cleaner URLs
+          const cleanFilePath = f.file_path.replace(/\s+/g, '_');
+          const cleanFileName = f.file_name.replace(/\s+/g, '_');
+
+            // === Tambahkan cache-buster disini ===
+          const cacheBuster = `?v=${new Date().getTime()}`;
+
+
+          const linkUrl = isPdf ? `${base_url + cleanFilePath}${cacheBuster}` : `${base_url + cleanFilePath}${cacheBuster}`;
+          filesHtml += `
+            <tr>
+              <td><a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${cleanFileName}</a></td>
+            </tr>
+          `;
+        });
+        filesHtml += "</tbody></table>";
+
+        $("#uploadKecamatanBody").html(filesHtml);
+        $("#modalUploadKabupaten").modal("show");
+      } else {
+        alert("Data tidak ditemukan");
+      }
+    },
+    error: function(xhr) {
+      alert("Gagal mengambil data details");
+    }
+  });
+
+});
+}
+
+
+$(document).on("submit", "#modalUploadKabupaten form", function (e) {
+
+console.log("test");
+
+let isValid = true;
+let hasErrorInKecamatanTab = false;
+
+// 1. Validasi status
+let status = $("#status_kecamatan").val();
+if (!status) {
+  isValid = false;
+  hasErrorInKecamatanTab = true;
+  $("#status_kecamatan").addClass("is-invalid");
+  if ($("#status_kecamatan").next(".invalid-feedback").length === 0) {
+    $("#status_kecamatan").after('<div class="invalid-feedback">Status harus dipilih.</div>');
+  }
+} else {
+  $("#status_kecamatan").removeClass("is-invalid");
+  $("#status_kecamatan").next(".invalid-feedback").remove();
+}
+
+let keterangan = $("#exampleTextarea").val().trim();
+if (status === "rejected" && !keterangan) {
+  isValid = false;
+  hasErrorInKecamatanTab = true;
+  $("#exampleTextarea").addClass("is-invalid");
+  if ($("#exampleTextarea").next(".invalid-feedback").length === 0) {
+    $("#exampleTextarea").after('<div class="invalid-feedback">Keterangan wajib diisi jika status rejected.</div>');
+  }
+} else {
+  $("#exampleTextarea").removeClass("is-invalid");
+  $("#exampleTextarea").next(".invalid-feedback").remove();
+}
+
+// Jika ada error, hentikan submit
+if (!isValid) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+});
+
+</script>
+
+
+<script>
+
+function loadKecamatanStatus(page = 1, length, search = '') {
+    $.ajax({
+        url: "<?= base_url('document-kabupaten/all') ?>",
+        type: "GET",
+        data: {
+            page: page,
+            length: length,
+            search: search
+        },
+        dataType: "json",
+        success: function(res) {
+
+          console.log("res", res)
+            let tbody = $("#KecamatanStatusBody");
+            // $("#DesaStatus").val(res.data[0].status);
+
+            tbody.empty();
+
+            if (res.data.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">Belum ada data</td></tr>');
+                return;
+            }
+
+       res.data.forEach(function(item) {
+    // Tentukan class badge
+    let statusClass = "text-bg-info"; // default
+    if (item.status_kecamatan === "approved") {
+        statusClass = "text-bg-success";
+    } else if (item.status_kecamatan === "rejected") {
+        statusClass = "text-bg-danger";
+    } else if (item.status_kecamatan === "submitted" || item.status_kecamatan === "resubmitted") {
+        statusClass = "text-bg-info";
+    }
+
+    // Capitalize huruf pertama
+          let statusText = item.status_kecamatan 
+              ? item.status_kecamatan.charAt(0).toUpperCase() + item.status_kecamatan.slice(1) 
+              : "";
+
+          let row = `
+              <tr>
+                  <td>${item.no}</td>
+                  <td>${item.tanggal}</td>
+                  <td>${item.kecamatan}</td>
+                  <td>${item.nama}</td>
+                  <td>${item.title}</td>
+                  <td><span class="badge ${statusClass}">${statusText}</span></td>
+                  <td><button class="btn btn-sm btn-success btnStatusDetailKabupaten" data-template="${item.template_id}" data-desa="${item.desa_id}" data-id="${item.id}">Detail</button></td>
+              </tr>
+          `;
+          tbody.append(row);
+
+          let pagination = $("#paginationOnStatus");
+          pagination.empty();
+
+          if (res.pagination && res.pagination.total_pages > 1) {
+              let html = '<ul class="pagination pagination-sm m-0">';
+
+              for (let i = 1; i <= res.pagination.total_pages; i++) {
+                  html += `
+                    <li class="page-item ${i === res.pagination.current_page ? 'active' : ''}">
+                      <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                  `;
+              }
+
+              html += '</ul>';
+              pagination.html(html);
+          }
+
+
+
+      });
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+        }
+    });
+}
+// handlers
+$(document).on("click", "#paginationOnStatus a.page-link", function(e){
+  e.preventDefault();
+  const page = Number($(this).data("page")) || 1;
+  const length = Number($("#perPageOnStatus").val() || 10);
+  const search = $("#searchInputStatus").val() || '';
+  loadKecamatanStatus(page, length, search);
+});
+
+$(document).on("change", "#perPageOnStatus", function(){
+  const length = Number($(this).val() || 10);
+  const search = $("#searchInputStatus").val() || '';
+  loadKecamatanStatus(1, length, search);
+});
+
+$(document).on("keyup", "#searchInputStatus", function(){
+  const search = $(this).val() || '';
+  const length = Number($("#perPageOnStatus").val() || 10);
+  loadKecamatanStatus(1, length, search);
+});
+
+// load pertama kali
+loadKecamatanStatus(1, 10, "");
+</script>
+
+
+<script>
+
+function ModalKabupatenDetailStatus(){
+$(document).on("click", ".btnStatusDetailKabupaten", function () {
+  let id = $(this).data("id");
+  let template = $(this).data("template")
+  let desa = $(this).data("desa")
+  $("#id_submmision").val(id);
+  var base_url = "<?= base_url() ?>";
+  $.ajax({
+  url: base_url + "/kabupaten/detail/" +id+"/"+template+"/"+desa,
+
+  // /${template}/${desa}/
+  method: "GET",
+  dataType: "json",
+  success: function(res) {
+    if (res.submission) {
+      $("#uploadDesaTitle").text(res.submission.title);
+      $("#id_template").val(template);
+      $("#desa_id").val(desa);
+      $("#earmarked").val(formatRupiahModal(res.submission.earmarked));
+      $("#non_earmarked").val(formatRupiahModal(res.submission.non_earmarked));
+      $("#status_kecamatan").val(res.submission.status_kabupaten);
+      $("#keterangan").val(res.submission.keterangan_kecamatan);
+      
+      
+      let filesHtml = "<table class='table table-bordered'><thead><tr><th>Document upload</th></tr></thead><tbody>";
+      res.files.forEach(f => {
+        const isPdf = f.file_path.toLowerCase().endsWith('.pdf');
+        // Replace spaces in file_path and file_name for cleaner URLs
+        const cleanFilePath = f.file_path.replace(/\s+/g, '_');
+        const cleanFileName = f.file_name.replace(/\s+/g, '_');
+        // === Tambahkan cache-buster disini ===
+        const cacheBuster = `?v=${new Date().getTime()}`;
+
+        const linkUrl = isPdf ? `${base_url + cleanFilePath}${cacheBuster}` : `${base_url + cleanFilePath}${cacheBuster}`;
+        filesHtml += `
+          <tr>
+            <td><a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${cleanFileName}</a></td>
+          </tr>
+        `;
+      });
+      filesHtml += "</tbody></table>";
+
+      $("#KabupatenDetail").html(filesHtml);
+      $("#modalStatusDetailKabupaten").modal("show");
+    } else {
+      alert("Data tidak ditemukan");
+    }
+  },
+  error: function(xhr) {
+    alert("Gagal mengambil data details");
+  }
+});
+
+});
+}
+
+
+</script>
+
+
+<script>
+    setTimeout(function() {
+        let flash = document.getElementById('flashMessage');
+        if (flash) {
+            flash.style.transition = 'opacity 0.5s ease';
+            flash.style.opacity = '0';
+            setTimeout(() => flash.remove(), 500); // hapus elemen setelah animasi
+        }
+    }, 3000); // 5000ms = 5 detik
+</script>
+
+
+
+<script>
+function loadProfilDesa(page = 1, length, search = '') {
+    $.ajax({
+        url: "<?= base_url('getDatadesa/all') ?>",
+        type: "GET",
+        data: {
+            page: page,
+            length: length,
+            search: search
+        },
+        dataType: "json",
+        success: function(res) {
+            let tbody = $("#profilDesa");
+            // $("#DesaStatus").val(res.data[0].status);
+
+            tbody.empty();
+
+            if (res.data.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">Belum ada data</td></tr>');
+                return;
+            }
+
+       res.data.forEach(function(item) {
+          let row = `
+              <tr>
+                  <td>${item.no}</td>
+                  <td>${item.nama}</td>
+                  <td>${item.kepala_desa}</td>
+                  <td>${item.no_rekening}</td>
+                  <td>${item.alamat}</td>
+                  <td>${item.kecamatan}</td>
+              </tr>
+          `;
+          tbody.append(row);
+          
+          let pagination = $("#paginationprofilDesa");
+          pagination.empty();
+
+if (res.pagination && res.pagination.total_pages > 1) {
+    let current = res.pagination.current_page;
+    let total = res.pagination.total_pages;
+    let html = '<ul class="pagination pagination-sm m-0">';
+
+    // Tombol Prev
+    if (current > 1) {
+        html += `
+          <li class="page-item">
+            <a class="page-link" href="#" data-page="${current - 1}">«</a>
+          </li>`;
+    }
+
+    // Hitung range (5 halaman saja)
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, current + 2);
+
+    // Jika total page > 5, pastikan tetap tampil 5
+    if (end - start < 4) {
+        if (start === 1) {
+            end = Math.min(total, start + 4);
+        } else if (end === total) {
+            start = Math.max(1, end - 4);
+        }
+    }
+
+    // Loop halaman terbatas
+    for (let i = start; i <= end; i++) {
+        html += `
+          <li class="page-item ${i === current ? 'active' : ''}">
+            <a class="page-link" href="#" data-page="${i}">${i}</a>
+          </li>`;
+    }
+
+    // Tombol Next
+    if (current < total) {
+        html += `
+          <li class="page-item">
+            <a class="page-link" href="#" data-page="${current + 1}">»</a>
+          </li>`;
+    }
+
+    html += "</ul>";
+    pagination.html(html);
+}
+
+
+
+      });
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+        }
+    });
+}
+// handlers
+$(document).on("click", "#paginationprofilDesa a.page-link", function(e){
+  e.preventDefault();
+  const page = Number($(this).data("page")) || 1;
+  const length = Number($("#perPageOnprofilDesa").val() || 10);
+  const search = $("#searchprofilDesa").val() || '';
+  loadProfilDesa(page, length, search);
+});
+
+$(document).on("change", "#perPageOnprofilDesa", function(){
+  const length = Number($(this).val() || 10);
+  const search = $("#searchprofilDesa").val() || '';
+  loadProfilDesa(1, length, search);
+});
+
+$(document).on("keyup", "#searchprofilDesa", function(){
+  const search = $(this).val() || '';
+  const length = Number($("#perPageOnprofilDesa").val() || 10);
+  loadProfilDesa(1, length, search);
+});
+
+// load pertama kali
+loadProfilDesa(1, 10, "");
+</script>
+
 
 
   </body>

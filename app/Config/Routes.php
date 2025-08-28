@@ -31,18 +31,48 @@ $routes->match(['GET','POST'], 'forgot-password', 'AuthController::forgotPasswor
 $routes->get('reset-password/(:segment)', 'AuthController::resetPassword/$1');
 $routes->post('process-reset-password', 'AuthController::processResetPassword');
 
+$routes->post('document-desa/upload/(:any)', 'DocumentDesaController::upload/$1');
+$routes->get('document-desa/getData', 'DocumentDesaController::getData');
+$routes->get('document-desa/document-status', 'DesaController::getDataStatus');
 
-$routes->post('templates/create_desa', 'TemplateController::storeDesa');
-$routes->post('templates/create_kecamatan', 'TemplateController::storeKecamatan');
-$routes->get('/templates/get_desa', 'TemplateController::getDesaTemplates');
+$routes->get('document-kecamatan/document-status', 'KecamatanController::getDataStatusKecamatan');
+$routes->get('document-kabupaten/all', 'KabupatenController::getDataStatusKabupatenAll');
+
+$routes->get('templates/detail/(:any)', 'DocumentDesaController::documentDesaDetail/$1');
+$routes->POST('templates/upload_files', 'DocumentDesaController::upload_files');
+$routes->POST('templates/kecamatan/upload_files', 'DocumentKecamatanController::upload_files');
+$routes->POST('templates/kabupaten/upload_files', 'KabupatenController::upload_files');
+
+$routes->get('/templates/kecamatan/detail/(:any)', 'DocumentKecamatanController::documentKecamatanDetail/$1/$2/$3');
+
+
+$routes->get('document-kabupaten/document-status', 'KabupatenController::getDataStatusKabupaten');
+
+$routes->get('getDatadesa/all', 'DesaController::getDataDesaAll');
+
+
+
+$routes->POST('update/profil-desa', 'DesaController::updateProfil');
+
+
+$routes->get('desa/detail/(:any)', 'DesaController::DesaDetail/$1');
+$routes->get('kecamatan/detail/(:any)', 'KecamatanController::KecamatanDetail/$1/$2/$3');
+$routes->get('kabupaten/detail/(:any)', 'KabupatenController::KabupatenDetail/$1/$2/$3');
+
+$routes->post('templates/create_templates', 'TemplateController::storeTemplates');
+$routes->get('templates/get_templates', 'TemplateController::getDocumentTemplates');
+$routes->get('templates/edit/(:any)', 'TemplateController::editDocument/$1');
+$routes->post('templates/update_templates', 'TemplateController::update_templates');
 $routes->get('templates/delete_desa/(:num)', 'TemplateController::deleteDesa/$1');
+
+$routes->post('templates/create_kecamatan', 'TemplateController::storeKecamatan');
 $routes->get('templates/get_kecamatan', 'TemplateController::getKecamatanTemplates');
 $routes->get('templates/delete_kecamatan/(:num)', 'TemplateController::deleteKecamatan/$1');
 $routes->post('templates/update_desa', 'TemplateController::updateDesa/$1');
 $routes->post('templates/update_kecamatan', 'TemplateController::updateKecamatan');
 
 
-$routes->get('document-desa/getData', 'DesaController::getDataDesa');
+$routes->get('document-desa/getStatus', 'DesaController::getDataStatus');
 $routes->get('document-kecamatan/getData', 'KecamatanController::getDataKecamatan');
 
 
@@ -63,27 +93,3 @@ $routes->group('kabupaten', ['filter' => 'auth:kabupaten'], function($routes) {
     $routes->get('dashboard', 'KabupatenController::dashboard');
     // route lainnya untuk kabupaten
 });
-
-
-
-// $routes->group('load-content', function($routes) {
-//     $routes->get('templates/(:segment)', 'TemplateController::loadTemplateContent/$1');
-//     $routes->get('templates/(:segment)/form', 'TemplateController::loadTemplateForm/$1');
-//     $routes->get('templates/(:segment)/form/(:num)', 'TemplateController::loadTemplateForm/$1/$2');
-// });
-
-// $routes->group('templates', function($routes) {
-//     // Desa
-//     $routes->get('desa', 'TemplateController::indexDesa');
-//     $routes->get('desa/create_desa', 'TemplateController::storeDesa');
-//     $routes->post('desa/store', 'TemplateController::storeDesa');
-//     $routes->get('desa/edit/(:num)', 'TemplateController::editDesa/$1');
-//     $routes->post('desa/update/(:num)', 'TemplateController::updateDesa/$1');
-//     $routes->get('desa/delete/(:num)', 'TemplateController::deleteDesa/$1');
-    
-//     // Kecamatan
-//     $routes->get('kecamatan', 'TemplateController::indexKecamatan');
-//     $routes->get('kecamatan/create', 'TemplateController::createKecamatan');
-//     $routes->post('kecamatan/store', 'TemplateController::storeKecamatan');
-//     // Tambahkan edit/update/delete untuk kecamatan jika diperlukan
-// });

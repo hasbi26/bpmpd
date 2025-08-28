@@ -7,7 +7,7 @@ use App\Models\UserModel;
 use App\Models\UserAdminModel;
 use App\Models\DesaModel;
 use App\Models\KecamatanModel;
-use App\Models\DocumentTemplatesDesaModel;
+// use App\Models\DocumentTemplatesDesaModel;
 use App\Models\DocumentTemplatesKecamatanModel;
 
 
@@ -20,7 +20,7 @@ class AdminDashboardController extends BaseController
 
         $this->session = \Config\Services::session();
 
-        $this->templateDesaModel = new DocumentTemplatesDesaModel();
+        // $this->templateDesaModel = new DocumentTemplatesDesaModel();
         $this->templateKecamatanModel = new DocumentTemplatesKecamatanModel();
         // $this->authLogger = new AuthLogger(\Config\Services::request());
     }
@@ -50,7 +50,7 @@ class AdminDashboardController extends BaseController
         $data = [
             'user' => $this->session->get() ,
             'type' => 'desa', // <-- INI YANG DIBUTUHKAN
-            'desaTemplates' => $this->templateDesaModel->getTemplatesByUser(session('user_id'))
+            // 'desaTemplates' => $this->templateDesaModel->getTemplatesByUser(session('user_id'))
         ];
         if (!$this->session->get('logged_in')) {
             return redirect()->to('/login')

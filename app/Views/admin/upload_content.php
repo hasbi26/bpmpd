@@ -1,90 +1,113 @@
 <!-- Content Wrapper -->
-    <section class="content">
-        <div class="container-fluid">
-            <h3 class="mb-3">Create Templates Documents</h3>
-            <!-- Tabs -->
-            <ul class="nav nav-tabs" id="templateTabs" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="desa-tab" data-bs-toggle="tab" href="#desa" role="tab">Template Desa</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="kecamatan-tab" data-bs-toggle="tab" href="#kecamatan" role="tab">Template Kecamatan</a>
-                </li>
-            </ul>
+<section class="content">
+  <div class="container-fluid">
+    <h3 class="mb-3">Create Templates Documents</h3>
 
-            <div class="tab-content mt-3" id="templateTabsContent">
-                <!-- Tab Desa -->
-                <div class="tab-pane fade show active" id="desa" role="tabpanel">
-                    <button class="btn btn-primary btn-sm mb-3" data-bs-toggle="modal" data-bs-target="#modalCreateDesa">
-                        <i class="fas fa-plus"></i> Tambah Template Desa
-                    </button>
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th width="5%">#</th>
-                                <th>Judul</th>
-                                <th>Deskripsi</th>
-                                <th>Dibuat Oleh</th>
-                                <th>Status</th>
-                                <th>Created At</th>
-                                <th width="15%">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="desaTableBody">
-                            <tr>
-                                <td colspan="6" class="text-center">Memuat data...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+    <div class="row mb-3 align-items-center">
+  <!-- Tombol Tambah Template Desa -->
+  <div class="col-auto">
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateDesa">
+      <i class="fas fa-plus"></i> Tambah Template Desa
+    </button>
+  </div>
 
-                <!-- Tab Kecamatan -->
-                <div class="tab-pane fade" id="kecamatan" role="tabpanel">
-                    <button class="btn btn-primary btn-sm mb-3" data-bs-toggle="modal" data-bs-target="#modalCreateKecamatan">
-                        <i class="fas fa-plus"></i> Tambah Template Kecamatan
-                    </button>
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th width="5%">#</th>
-                                <th>Judul</th>
-                                <th>Deskripsi</th>
-                                <th>Dibuat Oleh</th>
-                                <th>Status</th>
-                                <th>Created At</th>
-                                <th width="15%">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="kecamatanTableBody">
-                        <tr>
-                                <td colspan="6" class="text-center">Memuat data...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- Dropdown tampilkan entri -->
+  <div class="col-auto">
+    <label class="mb-0">
+      Tampilkan
+      <select id="perPage" class="form-select d-inline-block w-auto">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="25">25</option>
+      </select>
+      entri
+    </label>
+  </div>
+
+  <!-- Search -->
+  <div class="col ms-auto">
+    <input type="text" id="searchInput" class="form-control" placeholder="Cari dokumen...">
+  </div>
+</div>
+
+
+    <!-- Tabel -->
+    <table class="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th width="5%">#</th>
+          <th>Judul</th>
+          <th>Deskripsi</th>
+          <th>Dibuat Oleh</th>
+          <th>Status</th>
+          <th>Created At</th>
+          <th width="15%">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="desaTableBody"></tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="card-footer clearfix d-flex justify-content-center">
+      <div class="mt-2" id="pagination"></div>
+    </div>
+  </div>
+</section>
 
 <!-- Modal Create Desa -->
 <div class="modal fade" id="modalCreateDesa" tabindex="-1">
-  <div class="modal-dialog">
-    <form action="<?= base_url('templates/create_desa') ?>" method="POST">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <form action="<?= base_url('templates/create_templates') ?>" method="POST">
       <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Tambah Template Desa</h5></div>
-        <div class="modal-body">
-            <div class="mb-3">
-                <label>Judul</label>
-                <input type="text" name="title" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label>Deskripsi</label>
-                <textarea name="deskripsi" class="form-control"></textarea>
-            </div>
+        <div class="modal-header">
+          <h5 class="modal-title">Tambah Template Desa</h5>
         </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label>Document Title</label>
+            <input type="text" name="title" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>Deskripsi</label>
+            <textarea name="deskripsi" class="form-control"></textarea>
+          </div>
+
+          <!-- Tabs Desa/Kecamatan -->
+          <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+              <button class="nav-link active" id="nav-desa-tab" data-bs-toggle="tab" data-bs-target="#nav-desa" type="button" role="tab" aria-controls="nav-desa" aria-selected="true">Desa</button>
+              <button class="nav-link" id="nav-kecamatan-tab" data-bs-toggle="tab" data-bs-target="#nav-kecamatan" type="button" role="tab" aria-controls="nav-kecamatan" aria-selected="false">Kecamatan</button>
+            </div>
+          </nav>
+
+          <div class="tab-content mt-3" id="nav-tabContent">
+            <!-- Desa Tab -->
+            <div class="tab-pane fade show active" id="nav-desa" role="tabpanel" aria-labelledby="nav-desa-tab">
+              <div id="desa-container">
+                <div class="input-group mb-2 desa-input">
+                  <input type="text" name="desa[]" class="form-control" placeholder="Nama Document Desa">
+                  <button class="btn btn-danger remove-desa" type="button">Hapus</button>
+                </div>
+              </div>
+              <button id="add-desa" class="btn btn-primary" type="button">+ Tambah Document Desa</button>
+            </div>
+
+            <!-- Kecamatan Tab -->
+            <div class="tab-pane fade" id="nav-kecamatan" role="tabpanel" aria-labelledby="nav-kecamatan-tab">
+              <div id="kecamatan-container">
+                <div class="input-group mb-2 kecamatan-input">
+                  <input type="text" name="kecamatan[]" class="form-control" placeholder="Nama Document Kecamatan">
+                  <button class="btn btn-danger remove-kecamatan" type="button">Hapus</button>
+                </div>
+              </div>
+              <button id="add-kecamatan" class="btn btn-primary" type="button">+ Tambah Document Kecamatan</button>
+            </div>
+          </div>
+        </div>
+
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-primary">Simpan</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
         </div>
       </div>
     </form>
@@ -93,126 +116,59 @@
 
 <!-- Modal Edit Desa -->
 <div class="modal fade" id="modalEditDesa" tabindex="-1">
-  <div class="modal-dialog">
-    <form action="<?= base_url('templates/update_desa') ?>" method="POST">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <form id="formEditDesa" action="<?= base_url('templates/update_templates') ?>" method="POST">
       <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Edit Template Desa</h5></div>
-        <div class="modal-body">
-            <input type="hidden" name="id" id="desa_id">
-            <div class="mb-3">
-                <label>Judul</label>
-                <input type="text" name="title" id="desa_title" class="form-control" required>
-            </div>
-
-            <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="desa_is_active" name="is_active" value="1">
-            <label class="form-check-label" for="desa_is_active">
-                Aktif
-            </label>
-            </div>
-
-            
-            <div class="mb-3">
-                <label>Deskripsi</label>
-                <textarea name="deskripsi" id="desa_deskripsi" class="form-control"></textarea>
-            </div>
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Template Desa</h5>
         </div>
+        <div class="modal-body">
+          <input type="hidden" name="id" id="edit_id">
+
+          <div class="mb-3">
+            <label>Document Title</label>
+            <input type="text" name="title" id="edit_title" class="form-control" required>
+          </div>
+
+          <input type="hidden" name="is_active" value="0">
+        <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="edit_is_active" name="is_active" value="1">
+        <label class="form-check-label" for="edit_is_active">Aktif</label>
+        </div>
+
+          <div class="mb-3">
+            <label>Deskripsi</label>
+            <textarea name="deskripsi" id="edit_deskripsi" class="form-control"></textarea>
+          </div>
+
+          <!-- Tabs Desa/Kecamatan -->
+          <nav>
+            <div class="nav nav-tabs" id="nav-tab-edit" role="tablist">
+              <button class="nav-link active" id="nav-desa-edit-tab" data-bs-toggle="tab" data-bs-target="#nav-desa-edit" type="button" role="tab">Desa</button>
+              <button class="nav-link" id="nav-kecamatan-edit-tab" data-bs-toggle="tab" data-bs-target="#nav-kecamatan-edit" type="button" role="tab">Kecamatan</button>
+            </div>
+          </nav>
+
+          <div class="tab-content mt-3" id="nav-tabContent-edit">
+            <!-- Desa Tab -->
+            <div class="tab-pane fade show active" id="nav-desa-edit" role="tabpanel">
+              <div id="desa-container-edit"></div>
+              <button id="add-desa-edit" class="btn btn-primary" type="button">+ Tambah Document Desa</button>
+            </div>
+
+            <!-- Kecamatan Tab -->
+            <div class="tab-pane fade" id="nav-kecamatan-edit" role="tabpanel">
+              <div id="kecamatan-container-edit"></div>
+              <button id="add-kecamatan-edit" class="btn btn-primary" type="button">+ Tambah Document Kecamatan</button>
+            </div>
+          </div>
+        </div>
+
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-primary">Update</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Update</button>
         </div>
       </div>
     </form>
   </div>
 </div>
-
-<!-- Modal Create Kecamatan -->
-<div class="modal fade" id="modalCreateKecamatan" tabindex="-1">
-  <div class="modal-dialog">
-    <form action="<?= base_url('templates/create_kecamatan') ?>" method="POST">
-      <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Tambah Template Kecamatan</h5></div>
-        <div class="modal-body">
-            <div class="mb-3">
-                <label>Judul</label>
-                <input type="text" name="title" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label>Deskripsi</label>
-                <textarea name="deskripsi" class="form-control"></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-primary">Simpan</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal Edit Kecamatan -->
-<div class="modal fade" id="modalEditKecamatan" tabindex="-1">
-  <div class="modal-dialog">
-    <form action="<?= base_url('templates/update_kecamatan') ?>" method="POST">
-      <div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Edit Template Kecamatan</h5></div>
-        <div class="modal-body">
-            <input type="hidden" name="id" id="kecamatan_id">
-            <div class="mb-3">
-                <label>Judul</label>
-                <input type="text" name="title" id="kecamatan_title" class="form-control" required>
-            </div>
-
-            <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="kecamatan_is_active" name="is_active" value="1">
-            <label class="form-check-label" for="kecamatan_is_active">
-                Aktif
-            </label>
-            </div>
-
-
-            <div class="mb-3">
-                <label>Deskripsi</label>
-                <textarea name="deskripsi" id="kecamatan_deskripsi" class="form-control"></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-primary">Update</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-<script>
-    // Fill Edit Desa Modal
-    document.querySelectorAll('.btnEditDesa').forEach(btn => {
-        btn.addEventListener('click', function(){
-            document.getElementById('desa_id').value = this.dataset.id;
-            document.getElementById('desa_title').value = this.dataset.title;
-            document.getElementById('desa_deskripsi').value = this.dataset.deskripsi;
-        });
-    });
-
-    // Fill Edit Kecamatan Modal
-    document.querySelectorAll('.btnEditKecamatan').forEach(btn => {
-        btn.addEventListener('click', function(){
-            document.getElementById('kecamatan_id').value = this.dataset.id;
-            document.getElementById('kecamatan_title').value = this.dataset.title;
-            document.getElementById('kecamatan_deskripsi').value = this.dataset.deskripsi;
-        });
-    });
-</script>
-
-

@@ -16,16 +16,26 @@ class DocumentTemplatesKecamatanModel extends Model
         return $this->where('created_by', $userId)->findAll();
     }
 
-    public function getTemplatesWithUser($userId = null)
+    public function getTemplatesWithUser($userId = null, $search = null)
     {
-        $builder = $this->select('document_templates_kecamatan.*, user_admin.username, user_admin.email') // kolom dari kedua tabel
+        $builder = $this->select('document_templates_kecamatan.*, user_admin.username, user_admin.email')
                         ->join('user_admin', 'user_admin.id = document_templates_kecamatan.created_by', 'left');
     
-        if ($userId !== null) {
-            $builder->where('document_templates_kecamatan.created_by', $userId);
+        // filter user
+        if (!empty($userId)) {
+            $builder->where('document_templates_kecamatan.created_by', $userId)->orderBy('created_at', 'DESC');
         }
     
-        return $builder->findAll();
+        // filter search
+        if (!empty($search)) {
+            $builder->groupStart()
+                    ->like('document_templates_kecamatan.title', $search)
+                    ->orLike('document_templates_kecamatan.deskripsi', $search)
+                    ->orLike('user_admin.username', $search)
+                    ->groupEnd();
+        }
+    
+        return $builder;
     }
 
 

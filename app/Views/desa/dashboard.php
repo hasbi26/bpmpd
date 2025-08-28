@@ -142,6 +142,12 @@
         </a>
       </li>
       <li class="nav-item">
+        <a href="#" class="nav-link" data-content="profil" id="menu-profil">
+          <i class="nav-icon bi bi-person-circle"></i>
+          <p>Profil</p>
+        </a>
+      </li>
+      <li class="nav-item">
         <a href="#" class="nav-link" data-content="settings" id="menu-settings">
           <i class="nav-icon bi bi-pencil-square"></i>
           <p>Pengaturan</p>
@@ -188,7 +194,7 @@
         <!--end::To the end-->
         <!--begin::Copyright-->
         <strong>
-          BPMPD | Kabupaten Sumedang        </strong>
+          DPMPD | Kabupaten Sumedang        </strong>
         
         <!--end::Copyright-->
       </footer>
@@ -230,6 +236,14 @@ function waitForElements(selectors, callback) {
 
     </script>
 
+<script>
+  function formatRupiahModal(angka) {
+  if (!angka) return "0";
+  return angka
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+  </script>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -295,10 +309,21 @@ function loadContent(contentType) {
     .then(html => {
       dynamicContent.innerHTML = html;
 
-      waitForElements(['#documentDesa'], (selector, el) => {
+      waitForElements(['#documentDesa', '#uploadDesaBody', '#desaStatusBody', '#desaDetail'], (selector, el) => {
         if (selector === '#documentDesa') {
           LoadDocumentDesa(1, 10, "");
+        } if (selector === '#uploadDesaBody') {
+           modalDesa();
         }
+        if (selector === '#desaStatusBody') {
+          loadDesaStatus();
+        }
+        if (selector === '#desaDetail') {
+          ModalDesaDetailStatus();
+        }
+
+        
+
         // ,'#searchInput','#perPage','#pagination'
       });
       initDynamicContentScripts(); // Fungsi untuk inisialisasi komponen
@@ -399,9 +424,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${no++}</td>
                 <td>${item.title}</td>
                 <td>${item.deskripsi ?? '-'}</td>
-                <td><input type="file" name="file_${item.id}"></td>
                 <td>
-                  <button class="btn btn-sm btn-success">Upload</button>
+                  <button class="btn btn-sm btn-success btnUploadDesa" data-id="${item.id}">Detail</button>
                 </td>
               </tr>
             `;
@@ -479,6 +503,369 @@ document.addEventListener('DOMContentLoaded', function() {
   LoadDocumentDesa(1, 10, "");
 
 </script>
+
+<script>
+
+function badgeStatus(status) {
+  switch ((status || '').toLowerCase()) {
+    case 'approved': return '<span class="badge text-bg-success">Diterima</span>';
+    case 'rejected': return '<span class="badge text-bg-danger">Ditolak</span>';
+    default:         return '<span class="badge text-bg-secondary">Pending</span>';
+  }
+}
+
+function formatTanggal(dtStr) {
+  // input: "YYYY-MM-DD HH:MM:SS"
+  if (!dtStr) return '-';
+  // tampilkan apa adanya atau format lokal:
+  // biar stabil, pakai slice:
+  // "DD/MM/YYYY HH:MM:SS"
+  const y = dtStr.slice(0,4), m = dtStr.slice(5,7), d = dtStr.slice(8,10);
+  const t = dtStr.slice(11,19);
+  return `${d}/${m}/${y} ${t}`;
+}
+
+function loadDocsDasboard(page = 1, length = 10, search = '') {
+  $.ajax({
+    url: "<?= site_url('document-desa/getStatus') ?>",
+    method: "GET",
+    data: { page, length, search },
+    success: function(res) {
+      const tbody = $("#desaStatusBody");
+      let rows = "";
+      if (res.data && res.data.length) {
+        let no = (page - 1) * length + 1;
+        res.data.forEach(item => {
+          rows += `
+            <tr class="align-middle">
+              <td>${no++}.</td>
+              <td>${formatTanggal(item.created_at)}</td>
+              <td>${item.nama ?? '-'}</td>
+              <td>${item.keterangan ?? '-'}</td>
+              <td>${badgeStatus(item.status)}</td>
+            </tr>
+          `;
+        });
+      } else {
+        rows = `
+          <tr>
+            <td colspan="5" class="text-center">Tidak ada data</td>
+          </tr>
+        `;
+      }
+      tbody.html(rows);
+
+      // pagination
+      const total = res.recordsTotal ?? 0;
+      const totalPages = Math.max(1, Math.ceil(total / length));
+      let html = `<ul class="pagination pagination-sm m-0 float-end">`;
+
+      const prev = Math.max(1, page - 1);
+      html += `
+        <li class="page-item ${page === 1 ? 'disabled' : ''}">
+          <a class="page-link" href="#" data-page="${prev}">&laquo;</a>
+        </li>
+      `;
+
+      // (opsional) batasi jumlah nomor halaman agar tidak terlalu panjang
+      const windowSize = 5;
+      let start = Math.max(1, page - Math.floor(windowSize/2));
+      let end   = Math.min(totalPages, start + windowSize - 1);
+      if (end - start + 1 < windowSize) start = Math.max(1, end - windowSize + 1);
+
+      for (let i = start; i <= end; i++) {
+        html += `
+          <li class="page-item ${i === page ? 'active' : ''}">
+            <a class="page-link" href="#" data-page="${i}">${i}</a>
+          </li>
+        `;
+      }
+
+      const next = Math.min(totalPages, page + 1);
+      html += `
+        <li class="page-item ${page === totalPages ? 'disabled' : ''}">
+          <a class="page-link" href="#" data-page="${next}">&raquo;</a>
+        </li>
+      `;
+      html += `</ul>`;
+
+      $("#paginationDesaDashboard").html(html);
+    },
+    error: function(xhr) {
+      console.error(xhr.responseText || xhr.statusText);
+      $("#desaStatusBody").html(`
+        <tr><td colspan="5" class="text-center text-danger">Gagal memuat data</td></tr>
+      `);
+    }
+  });
+}
+
+// handlers
+$(document).on("click", "#paginationDesaDashboard a.page-link", function(e){
+  e.preventDefault();
+  const page = Number($(this).data("page")) || 1;
+  const length = Number($("#perPageDesaDashboard").val() || 10);
+  const search = $("#searchInputDesaDashboard").val() || '';
+  loadDocsDasboard(page, length, search);
+});
+
+$(document).on("change", "#perPageDesaDashboard", function(){
+  const length = Number($(this).val() || 10);
+  const search = $("#searchInputDesaDashboard").val() || '';
+  loadDocsDasboard(1, length, search);
+});
+
+$(document).on("keyup", "#searchInputDesaDashboard", function(){
+  const search = $(this).val() || '';
+  const length = Number($("#perPageDesaDashboard").val() || 10);
+  loadDocsDasboard(1, length, search);
+});
+
+// pertama kali load
+document.addEventListener('DOMContentLoaded', () => loadDocsDasboard(1, 10, ''));
+
+
+
+
+</script>
+
+<script>
+function modalDesa(){
+  $(document).on("click", ".btnUploadDesa", function () {
+    let id = $(this).data("id");
+    $("#id_template").val(id);
+    $.get(`/templates/detail/${id}`, function (res) {
+        if (res.error) {
+            alert(res.error);
+            return;
+        }
+        console.log("res",res)
+        // isi modal dengan data yang didapat
+        $("#uploadDesaTitle").text(res.template.title);
+        if(res.submission){
+          $("#earmarked_display").val(formatRupiahModal(res.submission.earmarked))
+          $("#non_earmarked_display").val(formatRupiahModal(res.submission.non_earmarked));
+          $("#earmarked").val(res.submission.earmarked)
+          $("#non_earmarked").val(res.submission.non_earmarked)
+        }
+
+        // render input upload untuk detail
+        let html = "";
+        if (res.details.length > 0) {
+            res.details.forEach(function (d) {
+                html += `
+                  <div class="mb-2">
+                    <label>${d.nama_file ?? 'Upload File'}</label>
+                    <input type="file" name="files[${d.id}]" class="form-control" accept="application/pdf">
+                  </div>`;
+            });
+        } else {
+            html = `<p class="text-muted">Belum ada detail untuk role ini.</p>`;
+        }
+        $("#uploadDesaBody").html(html);
+
+        // tampilkan modal
+        $("#modalUploadDesa").modal("show");
+    });
+});
+
+}
+
+
+$(document).on("input", "#earmarked_display", function () {
+    let val = $(this).val().replace(/\./g, "");
+    $(this).val(formatRupiah(val));
+    $("#earmarked").val(val); // simpan angka murni di hidden
+});
+
+$(document).on("input", "#non_earmarked_display", function () {
+    let val = $(this).val().replace(/\./g, "");
+    $(this).val(formatRupiah(val));
+    $("#non_earmarked").val(val);
+});
+
+
+
+
+function formatRupiah(angka) {
+    let number_string = angka.replace(/[^,\d]/g, "").toString(),
+        split = number_string.split(","),
+        sisa  = split[0].length % 3,
+        rupiah  = split[0].substr(0, sisa),
+        ribuan  = split[0].substr(sisa).match(/\d{3}/gi);
+
+    if (ribuan) {
+        let separator = sisa ? "." : "";
+        rupiah += separator + ribuan.join(".");
+    }
+
+    return split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
+}
+
+$(document).on("submit", "#modalUploadDesa form", function(e){
+    e.preventDefault();
+
+    let form = $(this)[0];
+    let data = new FormData(form);
+
+    $.ajax({
+        url: form.action,
+        method: form.method,
+        data: data,
+        processData: false,
+        contentType: false,
+        success: function(res){
+            if(res.error){
+                alert(res.error);
+            } else {
+                alert(res.message);
+                $("#modalUploadDesa").modal("hide");
+            }
+        },
+        error: function(xhr){
+            alert("Terjadi kesalahan server");
+        }
+    });
+});
+</script>
+<script>
+function ModalDesaDetailStatus(){
+  $(document).on("click", ".btnStatusDetailDesa", function () {
+    let id = $(this).data("id");
+    $("#id_submmision").val(id);
+    var base_url = "<?= base_url() ?>";
+    $.ajax({
+    url: base_url + "/desa/detail/" + id,
+    method: "GET",
+    dataType: "json",
+    success: function(res) {
+      if (res.submission) {
+        $("#uploadDesaTitle").text(res.submission.title);
+        $("#id_template").val(res.submission.id);
+        $("#earmarked").val(formatRupiahModal(res.submission.earmarked));
+        $("#non_earmarked").val(formatRupiahModal(res.submission.non_earmarked));
+        $("#status_kecamatan").val(res.submission.status_desa);
+        $("#keterangan").val(res.submission.keterangan_kecamatan);
+        
+        
+        let filesHtml = "<table class='table table-bordered'><thead><tr><th>Document upload</th></tr></thead><tbody>";
+        res.files.forEach(f => {
+          const isPdf = f.file_path.toLowerCase().endsWith('.pdf');
+          // Replace spaces in file_path and file_name for cleaner URLs
+          const cleanFilePath = f.file_path.replace(/\s+/g, '_');
+          const cleanFileName = f.file_name.replace(/\s+/g, '_');
+
+          const cacheBuster = `?v=${new Date().getTime()}`;
+          const linkUrl = isPdf ? `${base_url + cleanFilePath}${cacheBuster}` : `${base_url + cleanFilePath}${cacheBuster}`;
+          filesHtml += `
+            <tr>
+              <td><a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${cleanFileName}</a></td>
+            </tr>
+          `;
+        });
+        filesHtml += "</tbody></table>";
+
+        $("#desaDetail").html(filesHtml);
+        $("#modalStatusDetailDesa").modal("show");
+      } else {
+        alert("Data tidak ditemukan");
+      }
+    },
+    error: function(xhr) {
+      alert("Gagal mengambil data detail");
+    }
+  });
+
+});
+}
+</script>
+
+
+<script>
+function loadDesaStatus(page = 1, length = 10, search = '') {
+    $.ajax({
+        url: "<?= base_url('document-desa/document-status') ?>",
+        type: "GET",
+        data: {
+            page: page,
+            length: 10,
+            search: search
+        },
+        dataType: "json",
+        success: function(res) {
+            let tbody = $("#desaStatusBody");
+            // $("#DesaStatus").val(res.data[0].status);
+
+            tbody.empty();
+
+            if (res.data.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center">Belum ada data</td></tr>');
+                return;
+            }
+
+       res.data.forEach(function(item) {
+    // Tentukan class badge
+    let statusClass = "text-bg-info"; // default
+    if (item.status_desa === "approved") {
+        statusClass = "text-bg-success";
+    } else if (item.status_desa === "rejected") {
+        statusClass = "text-bg-danger";
+    } else if (item.status_desa === "submitted" || item.status_desa === "resubmitted") {
+        statusClass = "text-bg-info";
+    }
+
+    // Capitalize huruf pertama
+          let statusText = item.status_desa 
+              ? item.status_desa.charAt(0).toUpperCase() + item.status_desa.slice(1) 
+              : "";
+
+          let row = `
+              <tr>
+                  <td>${item.no}</td>
+                  <td>${item.tanggal}</td>
+                  <td>${item.title}</td>
+                  <td>${formatRupiahModal(item.earmarked)}</td>
+                  <td>${formatRupiahModal(item.non_earmarked)}</td>
+                  <td><span class="badge ${statusClass}">${statusText}</span></td>
+                  <td><button class="btn btn-sm btn-success btnStatusDetailDesa" data-id="${item.id}">Detail</button></td>
+              </tr>
+          `;
+          tbody.append(row);
+      });
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+        }
+    });
+}
+
+
+
+// handlers
+$(document).on("click", "#paginationStatus a.page-link", function(e){
+  e.preventDefault();
+  const page = Number($(this).data("page")) || 1;
+  const length = Number($("#perPageStatus").val() || 10);
+  const search = $("#searchInputStatus").val() || '';
+  loadDesaStatus(page, length, search);
+});
+
+$(document).on("change", "#perPageStatus", function(){
+  const length = Number($(this).val() || 10);
+  const search = $("#searchInputStatus").val() || '';
+  loadDesaStatus(1, length, search);
+});
+
+$(document).on("keyup", "#searchInputStatus", function(){
+  const search = $(this).val() || '';
+  const length = Number($("#perPageStatus").val() || 10);
+  loadDesaStatus(1, length, search);
+});
+
+// load pertama kali
+loadDesaStatus(1, 10, "");
+</script>
+
 
 
 

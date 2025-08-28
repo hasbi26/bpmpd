@@ -254,7 +254,7 @@ class SuperAdminController extends BaseController
 // Jika user tidak ditemukan
 if (!$user) {
     // Cek apakah username ada tapi role tidak sesuai
-    $userWithDifferentRole = $this->userModel->where('username', $username)->first();
+    $userWithDifferentRole = $this->$userModel->where('username', $username)->first();
     
     if ($userWithDifferentRole) {
         // Username ada tapi role tidak sesuai
