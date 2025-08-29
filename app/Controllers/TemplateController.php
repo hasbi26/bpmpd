@@ -245,30 +245,149 @@ public function update_templates()
 
 }
 
-public function deleteDesa($id){
+// public function deleteDesa($id){
 
-    $db      = \Config\Database::connect();
+//     $db      = \Config\Database::connect();
 
-    $db->transStart();
-    $db->table('document_templates')->where('id', $id)->delete();
-    $db->table('document_templates_detail')->where('id_templates', $id)->delete();
+//     $db->transStart();
+//     $db->table('document_templates')->where('id', $id)->delete();
+//     $db->table('document_templates_detail')->where('id_templates', $id)->delete();
 
-    $db->transComplete();
+//     $db->transComplete();
 
-    if ($db->transStatus() === false) {
-        $error = $db->error();
-        return redirect()->to('/admindashboard')->with('error', 'hapus data gagal: ' . ($error['message'] ?? 'Transaksi gagal.'));
-    }
+//     if ($db->transStatus() === false) {
+//         $error = $db->error();
+//         return redirect()->to('/admindashboard')->with('error', 'hapus data gagal: ' . ($error['message'] ?? 'Transaksi gagal.'));
+//     }
 
-    // session()->setFlashdata('success', 'Template berhasil disimpan.');
-    return redirect()->to('/admindashboard') // ganti sesuai route dashboard kamu
-    ->with('success', 'Template documents berhasil dihapus');
-}
+//     // session()->setFlashdata('success', 'Template berhasil disimpan.');
+//     return redirect()->to('/admindashboard') // ganti sesuai route dashboard kamu
+//     ->with('success', 'Template documents berhasil dihapus');
+// }
 
 
 public function getDocumentDesa(){
     
 }
+
+
+
+public function deleteTemplate($id)
+{
+    $db = \Config\Database::connect();
+    $db->transBegin();
+
+    try {
+        // --- 1. Ambil data template (untuk dapat nama folder) ---
+        $template = $db->table('document_templates')
+            ->select('title')
+            ->where('id', $id)
+            ->get()
+            ->getRow();
+
+        if (!$template) {
+            throw new \RuntimeException('Template tidak ditemukan');
+        }
+
+        $judulFolder = str_replace(' ', '_', $template->title);
+
+        // --- 2. Cari semua submission_id berdasarkan template_id ---
+        $submissionIds = $db->table('document_submissions')
+            ->select('id')
+            ->where('template_id', $id)
+            ->get()
+            ->getResultArray();
+
+        $submissionIds = array_column($submissionIds, 'id');
+
+        // --- 3. Cari semua file yang terkait ---
+        if (!empty($submissionIds)) {
+            $files = $db->table('document_submission_files')
+                ->whereIn('submission_id', $submissionIds)
+                ->get()
+                ->getResultArray();
+
+            // --- 4. Hapus file fisik ---
+            foreach ($files as $f) {
+                $filePath = FCPATH . $f['file_path'];
+                if (is_file($filePath)) {
+                    @unlink($filePath);
+                }
+            }
+
+            // --- 5. Hapus data dari document_submission_files ---
+            $db->table('document_submission_files')->whereIn('submission_id', $submissionIds)->delete();
+        }
+
+        // --- 6. Hapus submission terkait ---
+        if (!empty($submissionIds)) {
+            $db->table('document_submissions')->whereIn('id', $submissionIds)->delete();
+        }
+
+        // --- 7. Hapus detail template ---
+        $db->table('document_templates_detail')->where('id_templates', $id)->delete();
+
+        // --- 8. Terakhir hapus template ---
+        $db->table('document_templates')->where('id', $id)->delete();
+
+        // --- 9. Hapus folder template di uploads (jika kosong/masih ada isi, hapus semua) ---
+        $uploadsBase = FCPATH . 'uploads/kabupaten/kecamatan/';
+        $this->deleteTemplateFolders($uploadsBase, $judulFolder);
+
+        // Commit transaksi
+        if ($db->transStatus() === false) {
+            throw new \RuntimeException('Transaksi gagal.');
+        }
+
+        $db->transCommit();
+
+        return redirect()->to('/admindashboard')
+            ->with('success', 'Template, file, dan folder berhasil dihapus.');
+    } catch (\Throwable $e) {
+        $db->transRollback();
+        log_message('error', 'Delete Template Exception: {msg}', ['msg' => $e->getMessage()]);
+
+        return redirect()->to('/admindashboard')
+            ->with('error', 'Gagal hapus template: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Hapus folder template dari semua kecamatan/desa
+ */
+private function deleteTemplateFolders(string $basePath, string $judulFolder)
+{
+    // Rekursif cek semua kecamatan/desa
+    $iterator = new \RecursiveIteratorIterator(
+        new \RecursiveDirectoryIterator($basePath, \FilesystemIterator::SKIP_DOTS),
+        \RecursiveIteratorIterator::CHILD_FIRST
+    );
+
+    foreach ($iterator as $file) {
+        if ($file->isDir() && $file->getFilename() === $judulFolder) {
+            $this->rrmdir($file->getPathname());
+        }
+    }
+}
+
+/**
+ * Rekursif hapus folder beserta isinya
+ */
+private function rrmdir($dir)
+{
+    if (!is_dir($dir)) return;
+
+    $items = new \FilesystemIterator($dir);
+    foreach ($items as $item) {
+        if ($item->isDir()) {
+            $this->rrmdir($item->getPathname());
+        } else {
+            @unlink($item->getPathname());
+        }
+    }
+    @rmdir($dir);
+}
+
 
 
 }

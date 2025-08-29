@@ -384,6 +384,9 @@ class KabupatenController extends BaseController
 
   }
 
+public function landingPage(){
+    return view("kabupaten/landing_page");
+}
     
 
 }

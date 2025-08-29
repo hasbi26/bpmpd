@@ -5,6 +5,10 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
+
+ $routes->get('/dashboard', 'KabupatenController::landingPage');
+
+
 $routes->get('/', 'AuthController::loginpage');
 $routes->get('/admin', 'SuperAdminController::login');
 $routes->get('/auth/logoutadmin', 'SuperAdminController::logout');
@@ -63,7 +67,7 @@ $routes->post('templates/create_templates', 'TemplateController::storeTemplates'
 $routes->get('templates/get_templates', 'TemplateController::getDocumentTemplates');
 $routes->get('templates/edit/(:any)', 'TemplateController::editDocument/$1');
 $routes->post('templates/update_templates', 'TemplateController::update_templates');
-$routes->get('templates/delete_desa/(:num)', 'TemplateController::deleteDesa/$1');
+$routes->get('templates/delete_desa/(:num)', 'TemplateController::deleteTemplate/$1');
 
 $routes->post('templates/create_kecamatan', 'TemplateController::storeKecamatan');
 $routes->get('templates/get_kecamatan', 'TemplateController::getKecamatanTemplates');
