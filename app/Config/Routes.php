@@ -68,6 +68,11 @@ $routes->get('templates/get_templates', 'TemplateController::getDocumentTemplate
 $routes->get('templates/edit/(:any)', 'TemplateController::editDocument/$1');
 $routes->post('templates/update_templates', 'TemplateController::update_templates');
 $routes->get('templates/delete_desa/(:num)', 'TemplateController::deleteTemplate/$1');
+$routes->post('templates/deleteWithPassword', 'TemplateController::deleteWithPassword');
+$routes->post('templates/reverifikasi', 'TemplateController::reverifikasi');
+$routes->post('templates/reverifikasi-kabupaten', 'TemplateController::reverifikasiKabupaten');
+
+
 
 $routes->post('templates/create_kecamatan', 'TemplateController::storeKecamatan');
 $routes->get('templates/get_kecamatan', 'TemplateController::getKecamatanTemplates');

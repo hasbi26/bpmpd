@@ -3,7 +3,7 @@
   <!--begin::Head-->
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>DPMPD | <?= esc(ucfirst($user->role)) ?> <?= esc(ucfirst($user->username)) ?></title>
+    <title>DPMD | <?= esc(ucfirst($user->role)) ?> <?= esc(ucfirst($user->username)) ?></title>
     <!--begin::Accessibility Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <meta name="color-scheme" content="light dark" />
@@ -11,15 +11,15 @@
     <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
     <!--end::Accessibility Meta Tags-->
     <!--begin::Primary Meta Tags-->
-    <meta name="title" content="AdminLTE | Dashboard v3" />
+    <meta name="title" content="DPMD | Dashboard v1" />
     <meta name="author" content="ColorlibHQ" />
     <meta
       name="description"
-      content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS. Fully accessible with WCAG 2.1 AA compliance."
+      content="Dinas Pemberdayaan Masyarakat Dan Desa"
     />
     <meta
       name="keywords"
-      content="bootstrap 5, bootstrap, bootstrap 5 admin dashboard, bootstrap 5 dashboard, bootstrap 5 charts, bootstrap 5 calendar, bootstrap 5 datepicker, bootstrap 5 tables, bootstrap 5 datatable, vanilla js datatable, colorlibhq, colorlibhq dashboard, colorlibhq admin dashboard, accessible admin panel, WCAG compliant"
+      content="Dinas Pemberdayaan Masyarakat Dan Desa Kabupaten Sumedang"
     />
     <!--end::Primary Meta Tags-->
     <!--begin::Accessibility Features-->
@@ -158,11 +158,11 @@
         <div class="col-sm-6">
 
         <?php if (session()->getFlashdata('success')): ?>
-<div class="alert alert-success">
+<div class="alert alert-success alert-dismissible fade show" role="alert" id="flashMessage">
     <?= session()->getFlashdata('success') ?>
 </div>
 <?php elseif (session()->getFlashdata('error')): ?>
-<div class="alert alert-danger">
+<div class="alert alert-danger alert-dismissible fade show" role="alert" id="flashMessage">
     <?= session()->getFlashdata('error') ?>
 </div>
 <?php endif; ?>
@@ -188,7 +188,7 @@
         <!--end::To the end-->
         <!--begin::Copyright-->
         <strong>
-          DPMPD | Kabupaten Sumedang        </strong>
+        DPMD | Kabupaten Sumedang        </strong>
         
         <!--end::Copyright-->
       </footer>
@@ -651,6 +651,7 @@ function loadKecamatanStatus(page = 1, length = 10, search = '') {
         },
         dataType: "json",
         success: function(res) {
+          // console.log("res", res)
             let tbody = $("#KecamatanStatusBody");
             // $("#DesaStatus").val(res.data[0].status);
 
@@ -753,13 +754,15 @@ function ModalDesaDetailStatus(){
     method: "GET",
     dataType: "json",
     success: function(res) {
+      console.log("res",res)
       if (res.submission) {
         $("#uploadDesaTitle").text(res.submission.title);
-        $("#id_template").val(res.submission.id);
+        $("#idSubmission").val(res.submission.id);
         $("#earmarked").val(formatRupiahModal(res.submission.earmarked));
         $("#non_earmarked").val(formatRupiahModal(res.submission.non_earmarked));
         $("#status_kecamatan").val(res.submission.status_kabupaten);
         $("#keterangan").val(res.submission.keterangan_kecamatan);
+        $("#status_pengajuan").val(res.submission.keterangan_kabupaten);
         
         
         let filesHtml = "<table class='table table-bordered'><thead><tr><th>Document upload</th></tr></thead><tbody>";

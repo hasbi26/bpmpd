@@ -3,19 +3,28 @@
 use App\Models\DocumentTemplatesDesaModel;
 use App\Models\DocumentTemplatesKecamatanModel;
 use App\Models\DocumentTemplatesModel;
-
+use App\Models\UserAdminModel;
 
 class TemplateController extends BaseController
 {
     protected $templateDesaModel;
     protected $templateKecamatanModel;
     protected $templateDocumentModel;
+    protected $userAdminModel;
+    protected $session;
+
+
 
     public function __construct()
     {
         $this->templateDesaModel = new DocumentTemplatesDesaModel();
         $this->templateKecamatanModel = new DocumentTemplatesKecamatanModel();
         $this->templateDocumentModel = new DocumentTemplatesModel();
+        $this->userAdminModel = new UserAdminModel();
+
+        $this->session = \Config\Services::session();
+
+
     }
 
     // DESA TEMPLATES
@@ -272,6 +281,27 @@ public function getDocumentDesa(){
 
 
 
+public function deleteWithPassword()
+{
+    $id = $this->request->getPost('id');
+    $password = $this->request->getPost('password');
+
+    $username = session()->get('username');
+    $role = session()->get('role'); // pastikan kamu simpan user_id saat login
+    $user = $this->userAdminModel->getUserByUsernameAndRole($username, $role);
+
+    if (!$user || !password_verify($password, $user['password'])) {
+        return redirect()->to('/admindashboard')
+        ->with('error', 'Template, file, dan folder Gagal dihapus Password Salah.');
+    }
+
+    // ✅ jika password benar, lanjutkan ke fungsi hapus template
+    return $this->deleteTemplate($id);
+}
+
+
+
+
 public function deleteTemplate($id)
 {
     $db = \Config\Database::connect();
@@ -387,6 +417,93 @@ private function rrmdir($dir)
     }
     @rmdir($dir);
 }
+
+
+public function reverifikasi()
+{
+    $id = $this->request->getPost('idSubmission');
+    $db = \Config\Database::connect();
+
+    try {
+        $builder = $db->table('document_submissions');
+        $builder->where('id', $id)
+            ->update([
+                'status_desa' => 'submitted',
+                'status_kecamatan' => 'pending',
+            ]);
+
+        if ($db->affectedRows() > 0) {
+            return redirect()->to('kecamatan/dashboard')
+            ->with('success', 'Verifikasi berhasil diperbarui.');
+        } else {
+                return redirect()->to('kecamatan/dashboard')
+                ->with('error', 'Verifikasi Tidak ada yang di perbaharui');
+        }
+    } catch (\Throwable $e) {
+        return redirect()->to('kecamatan/dashboard')
+        ->with('error', 'Gagal memperbarui status: ' . $e->getMessage());
+    }
+}
+
+
+public function reverifikasiKabupaten()
+{
+    $id = $this->request->getPost('id_submission');
+    $newStatus = $this->request->getPost('status_kecamatan_new');
+    $StatusPengajuan = $this->request->getPost('status_pengejuan');
+
+    // dd($id);    
+    $db = \Config\Database::connect();
+    
+    if ($newStatus == "submitted"){
+        try {
+            $builder = $db->table('document_submissions');
+            $builder->where('id', $id)
+                ->update([
+                    'status_kecamatan' => 'submitted',
+                    'status_kabupaten' => 'pending',
+                ]);
+
+            if ($db->affectedRows() > 0) {
+                return redirect()->to('kabupaten/dashboard')
+                ->with('success', 'Verifikasi berhasil diperbarui.');
+            } else {
+                    return redirect()->to('kabupaten/dashboard')
+                    ->with('error', 'Verifikasi Tidak ada yang di perbaharui');
+            }
+        } catch (\Throwable $e) {
+            return redirect()->to('kabupaten/dashboard')
+            ->with('error', 'Gagal memperbarui status: ' . $e->getMessage());
+        }
+    } else {
+
+        try {
+            $builder = $db->table('document_submissions');
+            $builder->where('id', $id)
+                ->update([
+                    'keterangan_kabupaten' => $StatusPengajuan,
+                ]);
+
+            if ($db->affectedRows() > 0) {
+                return redirect()->to('kabupaten/dashboard')
+                ->with('success', 'Verifikasi berhasil diperbarui.');
+            } else {
+                    return redirect()->to('kabupaten/dashboard')
+                    ->with('error', 'Verifikasi Tidak ada yang di perbaharui');
+            }
+
+        }
+        catch (\Throwable $e){
+            return redirect()->to('kabupaten/dashboard')
+            ->with('error', 'Gagal memperbarui status: ' . $e->getMessage());
+        }
+
+    }
+
+
+
+}
+
 
 
 

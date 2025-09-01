@@ -168,6 +168,7 @@ class KabupatenController extends BaseController
                 'non_earmarked' => $submission['non_earmarked'],
                 'status_desa'   => $submission['status_desa'],
                 'keterangan_kecamatan' => $submission['keterangan_kecamatan'],
+                'keterangan_kabupaten' => $submission['keterangan_kabupaten'],
                 'status_kecamatan' => $submission['status_kecamatan'],
                 'status_kabupaten' => $submission['status_kabupaten'],
                 'created_at'    => $submission['created_at'],

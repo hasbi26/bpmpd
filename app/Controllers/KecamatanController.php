@@ -94,6 +94,7 @@ class KecamatanController extends BaseController
    
        // Ambil desa_id dari session
        $KecamatanId   = session('role_id') ?? null;
+
    
        if (!$KecamatanId) {
            return $this->response->setStatusCode(401)->setJSON([
@@ -128,6 +129,9 @@ class KecamatanController extends BaseController
         //       ->where('ds.status_desa',"submitted")
         //       ->orWhere('ds.status_kecamatan',"rejected")
         //    ->groupEnd();
+
+        
+
    
        if (!empty($search)) {
            $builder->groupStart()
@@ -168,6 +172,7 @@ class KecamatanController extends BaseController
                'detail_url'   => base_url("document/detail/" . $row['id'])
            ];
        }
+
    
        return $this->response->setJSON([
            'recordsTotal'    => $total,
@@ -225,6 +230,7 @@ class KecamatanController extends BaseController
                 'non_earmarked' => $submission['non_earmarked'],
                 'status_desa'   => $submission['status_desa'],
                 'keterangan_kecamatan' => $submission['keterangan_kecamatan'],
+                'keterangan_kabupaten' => $submission['keterangan_kabupaten'],
                 'status_kecamatan' => $submission['status_kecamatan'],
                 'status_kabupaten' => $submission['status_kabupaten'],
                 'created_at'    => $submission['created_at'],

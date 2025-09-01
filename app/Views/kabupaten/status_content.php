@@ -49,8 +49,9 @@
 
 <div class="modal fade" id="modalStatusDetailKabupaten" tabindex="-1">
   <div class="modal-dialog modal-lg">
-    <form action="<?= base_url('templates/upload_files') ?>" method="POST" enctype="multipart/form-data">
-      <input type="hidden" name="id_template" id="id_template">
+    <form action="<?= base_url('templates/reverifikasi-kabupaten') ?>" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="id_template" id="id_template">
+      <input type="hidden" name="id_submission" id="id_submission">
       <div class="modal-content">
       <div class="modal-header d-flex justify-content-between align-items-center">
       <h5 class="modal-title m-0">Detail Template : <span id="uploadDesaTitle"></span></h5>
@@ -68,13 +69,21 @@
             <label>Non-Earmarked</label>
             <input disabled type="text"  name="non_earmarked" id="non_earmarked" class="form-control">
           </div>
-          <div class="col-md-6">
-
-          <label>Status</label>
-          <input disabled type="text"  name="status_kecamatan" id="status_kecamatan" class="form-control">
-
-
-        </div>
+        <div class="col-md-3">
+            <label>Status Document</label>
+            <select name="status_kecamatan_new" id="status_kecamatan_new" class="form-control">
+              <option value="" selected>-- Pilih Status --</option>
+              <option value="submitted">Verifikasi Ulang</option>
+            </select>
+          </div>
+        <div class="col-md-3">
+        <label>Status Pengejuan</label>
+        <select name="status_pengejuan" id="status_pengejuan" class="form-control">
+          <option value="" selected>-- Pilih Status --</option>
+          <option value="Pengajuan KPPN">Pengajuan KPPN</option>
+          <option value="SP2D">SP2D</option>
+        </select>
+       </div>
       </div>
 
       <div class="mb-3">
@@ -87,6 +96,8 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          <button type="submit" class="btn btn-success">submit</button>
+
         </div>
       </div>
     </form>

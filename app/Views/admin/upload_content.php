@@ -172,3 +172,28 @@
     </form>
   </div>
 </div>
+
+
+<div class="modal fade" id="modalDeleteDesa" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="<?= site_url('templates/deleteWithPassword') ?>">
+      <?= csrf_field() ?>
+      <input type="hidden" name="id" id="deleteTemplateId">
+
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Konfirmasi Hapus Template</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>Masukkan password Anda untuk menghapus template <b id="deleteTemplateTitle"></b>:</p>
+          <input type="password" class="form-control" name="password" required minlength="5">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-danger">Hapus</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

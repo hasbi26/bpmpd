@@ -49,8 +49,8 @@
 
 <div class="modal fade" id="modalStatusDetailKecamatan" tabindex="-1">
   <div class="modal-dialog modal-lg">
-    <form action="<?= base_url('templates/upload_files') ?>" method="POST" enctype="multipart/form-data">
-      <input type="hidden" name="id_template" id="id_template">
+    <form action="<?= base_url('templates/reverifikasi') ?>" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="idSubmission" id="idSubmission">
       <div class="modal-content">
       <div class="modal-header d-flex justify-content-between align-items-center">
       <h5 class="modal-title m-0">Detail Template : <span id="uploadDesaTitle"></span></h5>
@@ -68,13 +68,15 @@
             <label>Non-Earmarked</label>
             <input disabled type="text"  name="non_earmarked" id="non_earmarked" class="form-control">
           </div>
-          <div class="col-md-6">
-
-          <label>Status</label>
+          <div class="col-md-3">
+          <label>Status Document</label>
           <input disabled type="text"  name="status_kecamatan" id="status_kecamatan" class="form-control">
+          </div>
 
-
-        </div>
+          <div class="col-md-3">
+          <label>Status Pengajuan</label>
+          <input disabled type="text"  name="status_pengajuan" id="status_pengajuan" class="form-control">
+          </div>
       </div>
 
       <div class="mb-3">
@@ -87,6 +89,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          <!-- <button type="submit" class="btn btn-danger">Verifikasi ulang</button> -->
         </div>
       </div>
     </form>
