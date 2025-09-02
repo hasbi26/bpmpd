@@ -53,7 +53,9 @@
   </head>
   <!--end::Head-->
   <!--begin::Body-->
-  <body class="login-page bg-body-secondary">
+  <body class="login-page bg-body-secondary" style="background: url('<?= $bgFile ?>') 
+             no-repeat center center fixed; 
+             background-size: cover;">
     <div class="login-box">
       <div class="login-logo">
         <!-- <a href="../index2.html"><b>Admin</b>LTE</a> -->
@@ -95,7 +97,6 @@
                           <option value="kecamatan">Kecamatan</option>
                           <option value="desa">Desa</option>
                           </select>
-                          <!-- <div class="invalid-feedback">Please select a valid state.</div> -->
                         </div>
             <div class="input-group mb-3">
             <input type="password" id="password" name="password" class="form-control" placeholder="Password" />
@@ -123,18 +124,10 @@
             <!--end::Row-->
           </form>
           <div class="social-auth-links text-center mb-3 d-grid gap-2">
-            <!-- <p>- OR -</p> -->
-            <!-- <a href="#" class="btn btn-primary">
-              <i class="bi bi-facebook me-2"></i> Sign in using Facebook
-            </a> -->
-            <!-- <a href="#" class="btn btn-danger">
-              <i class="bi bi-google me-2"></i> Sign in using Google+
-            </a> -->
           </div> 
           <!-- /.social-auth-links -->
      <p class="mb-1"><a href="<?= base_url('/auth/forgot') ?>">Lupa password ?</a></p>
           <p class="mb-0">
-            <!-- <a href="register.html" class="text-center"> Register a new membership </a> -->
           </p>
         </div>
         <!-- /.login-card-body-->

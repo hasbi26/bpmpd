@@ -31,36 +31,47 @@ class AdminDashboardController extends BaseController
         $data = [
             'user' => $this->session->get() 
         ];
-
-
-        // dd($this->session->get('logged_in'));
-
         if (!$this->session->get('logged_in')) {
             return redirect()->to('/login')
                              ->with('error', 'Silakan login terlebih dahulu');
         }
-        
         return view('superadmin/admin_dashboard', $data);
     }
 
 
     public function admindashboard()
     {
-
+        $customBgPath = FCPATH . 'assets/adminlte/img/login-bg.jpg';
+        $customBgUrl  = file_exists($customBgPath) 
+            ? base_url('assets/adminlte/img/login-bg.jpg') 
+            : null; // null kalau file belum ada
+        
         $data = [
-            'user' => $this->session->get() ,
-            'type' => 'desa', // <-- INI YANG DIBUTUHKAN
-            // 'desaTemplates' => $this->templateDesaModel->getTemplatesByUser(session('user_id'))
+            'user'     => $this->session->get(),
+            'type'     => 'desa',
+            'customBg' => $customBgUrl
         ];
+        
         if (!$this->session->get('logged_in')) {
             return redirect()->to('/login')
                              ->with('error', 'Silakan login terlebih dahulu');
         }
 
-
-
         return view('superadmin/admin_dashboard', $data);
 
     }
+
+
+    public function getBackground()
+{
+    $customBgPath = FCPATH . 'assets/adminlte/img/login-bg.jpg';
+    $customBgUrl  = file_exists($customBgPath)
+        ? base_url('assets/adminlte/img/login-bg.jpg')
+        : null;
+
+    return $this->response->setJSON([
+        'image' => $customBgUrl
+    ]);
+}
 
 }

@@ -54,9 +54,13 @@ $routes->get('document-kabupaten/document-status', 'KabupatenController::getData
 
 $routes->get('getDatadesa/all', 'DesaController::getDataDesaAll');
 
+$routes->get('admin/getBackground', 'SuperAdminController::getBackground');
+$routes->post('admin/deleteBackground', 'SuperAdminController::deleteBackground');
+
 
 
 $routes->POST('update/profil-desa', 'DesaController::updateProfil');
+$routes->POST('admin/uploadBackground', 'SuperAdminController::uploadBackground');
 
 
 $routes->get('desa/detail/(:any)', 'DesaController::DesaDetail/$1');

@@ -6,7 +6,7 @@ class Login extends BaseController
 {
     public function index($tipe)
     {
-        $data = [];
+
 
         // Set judul dan keterangan berdasarkan tipe login
         switch ($tipe) {
@@ -25,7 +25,6 @@ class Login extends BaseController
             default:
                 throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
-
         return view('login_form', $data);
     }
 }

@@ -283,7 +283,7 @@ function loadContent(contentType) {
     })
     .then(html => {
       dynamicContent.innerHTML = html;
-    waitForElements(['#desaTableBody', '#kecamatanTableBody', '#nav-tabContent'], (selector, el) => {
+    waitForElements(['#desaTableBody', '#kecamatanTableBody', '#nav-tabContent', '#imageLoader'], (selector, el) => {
         if (selector === '#desaTableBody') {
             LoadDocumentDesa(1, 10, "");
 
@@ -319,6 +319,9 @@ function loadContent(contentType) {
         }
         if (selector === '#nav-tabContent') {
           renderNav();
+        }
+        if (selector === '#imageLoader') {
+          loadImage(); // load pertama kali
         }
 
       });
@@ -701,6 +704,45 @@ $(document).on("click", ".remove-kecamatan", function () {
 }
 
 
+
+</script>
+
+
+<script>
+  function loadImage() {
+    $.get("<?= base_url('admin/getBackground') ?>?t=" + Date.now(), function(res) {
+        let html = "";
+
+        if (res.image) {
+            html += `
+                <div class="mt-3">
+                    <label>Wallpaper saat ini:</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="${res.image}" alt="Background" class="img-thumbnail" style="max-width: 200px;">
+                        <button class="btn btn-danger btn-sm" onclick="deleteBackground()">Hapus</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            html = `<p class="text-muted">Belum ada background custom.</p>`;
+        }
+
+        document.getElementById("imageLoader").innerHTML = html;
+    });
+}
+
+
+
+function deleteBackground() {
+    if (!confirm("Hapus background ini?")) return;
+
+    $.post("<?= base_url('admin/deleteBackground') ?>", {
+        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+    }, function(res) {
+        alert(res.message);
+        loadImage(); // reload thumbnail setelah hapus
+    });
+}
 
 </script>
 
