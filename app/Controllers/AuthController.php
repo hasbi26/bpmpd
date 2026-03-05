@@ -49,6 +49,17 @@ class AuthController extends BaseController
         $password = $this->request->getPost('password');
         $role = $this->request->getPost('role');
         $user = $this->userModel->getUserByUsernameAndRole($username, $role);
+        $recaptchaResponse = $this->request->getPost('g-recaptcha-response');
+
+        $secretKey = "6Lfx7aMrAAAAACLo-UeUwvyXRWBZIvB5UIrQYlUE";
+
+        $verifyResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secretKey}&response={$recaptchaResponse}");
+        $responseData = json_decode($verifyResponse);
+
+
+            if (empty($recaptchaResponse) || !$responseData->success) {
+                return redirect()->back()->withInput()->with('error', 'Verifikasi reCAPTCHA gagal.');
+            }
 
    //     dd($user);
 // Jika user tidak ditemukan
