@@ -37,6 +37,12 @@ class KabupatenController extends BaseController
     $page    = (int) ($this->request->getGet('page') ?? 1);
     $length  = (int) ($this->request->getGet('length') ?? 10);
     $search  = trim((string) $this->request->getGet('search'));
+    $sortBy  = $this->request->getGet('sort_by') ?? 'ds.created_at';
+    $sortDir = strtolower($this->request->getGet('sort_dir') ?? 'desc');
+
+    if (!in_array($sortDir, ['asc','desc'])) {
+        $sortDir = 'desc';
+    }
 
     if ($page < 1)   $page = 1;
     if ($length < 1) $length = 10;
@@ -85,6 +91,8 @@ class KabupatenController extends BaseController
         $builder->groupStart()
             ->like('dt.title', $search)
             ->orLike('dsa.nama', $search)
+            ->orLike('kca.nama', $search)
+            ->orLike('ds.status_kecamatan', $search)
             ->groupEnd();
     }
 
@@ -98,10 +106,10 @@ class KabupatenController extends BaseController
     // offset
     $offset = ($page - 1) * $length;
 
-    $rows = $builder->orderBy('ds.created_at', 'DESC')
-        ->limit($length, $offset)
-        ->get()
-        ->getResultArray();
+    $rows = $builder->orderBy($sortBy, $sortDir)
+    ->limit($length, $offset)
+    ->get()
+    ->getResultArray();
 
     $data = [];
     $no = $offset + 1;
@@ -405,6 +413,13 @@ class KabupatenController extends BaseController
     $length  = (int) ($this->request->getGet('length') ?? 10);
     $search  = trim((string) $this->request->getGet('search'));
 
+    $sortBy  = $this->request->getGet('sort_by') ?? 'ds.created_at';
+    $sortDir = strtolower($this->request->getGet('sort_dir') ?? 'desc');
+
+    if (!in_array($sortDir, ['asc','desc'])) {
+        $sortDir = 'desc';
+    }
+
     if ($page < 1)   $page = 1;
     if ($length < 1) $length = 10;
 
@@ -446,6 +461,8 @@ class KabupatenController extends BaseController
         $builder->groupStart()
                 ->like('dt.title', $search)
                 ->orLike('dsa.nama', $search)
+                ->orLike('kca.nama', $search)
+                ->orLike('ds.status_kecamatan', $search)
                 ->groupEnd();
     }
 
@@ -455,10 +472,16 @@ class KabupatenController extends BaseController
 
     // pagination
     $offset = ($page - 1) * $length;
-    $rows = $builder->orderBy('ds.created_at', 'DESC')
-                    ->limit($length, $offset)
-                    ->get()
-                    ->getResultArray();
+
+    $rows = $builder->orderBy($sortBy, $sortDir)
+                ->limit($length, $offset)
+                ->get()
+                ->getResultArray();
+
+    // $rows = $builder->orderBy('ds.created_at', 'DESC')
+    //                 ->limit($length, $offset)
+    //                 ->get()
+    //                 ->getResultArray();
 
     // Format hasil agar rapi ke frontend
     $data = [];

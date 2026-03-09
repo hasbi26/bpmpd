@@ -25,11 +25,11 @@
         <thead>
             <tr>
                 <th style="width: 10px">No</th>
-                <th>Tanggal Upload</th>
-                <th>Nama Document</th>
-                <th>Desa</th>
-                <th>Kecamatan</th>
-                <th>Status</th>
+                <th class="sortable" data-sort="ds.created_at">Tanggal Upload <i class="bi bi-arrow-down-up"></i></th>
+                <th class="sortable" data-sort="dt.title">Nama Document</th>
+                <th class="sortable" data-sort="dsa.nama">Desa</th>
+                <th class="sortable" data-sort="kca.nama">Kecamatan</th>
+                <th class="sortable" data-sort="ds.status_kecamatan">Status</th>
                 <th>Detail</th>
             </tr>
         </thead>

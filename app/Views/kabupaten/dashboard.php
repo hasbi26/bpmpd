@@ -379,14 +379,20 @@
 
 
     <script>
-    function loadDesaStatus(page = 1, length = 10, search = '') {
+    let currentSort = "ds.created_at";
+    let currentDir = "desc";
+
+    function loadDesaStatus(page = 1, length = 10, search = '', sort_by = currentSort, sort_dir =
+        currentDir) {
         $.ajax({
             url: "<?= base_url('document-kabupaten/document-status') ?>",
             type: "GET",
             data: {
                 page: page,
                 length: length,
-                search: search
+                search: search,
+                sort_by: sort_by,
+                sort_dir: sort_dir
             },
             dataType: "json",
             success: function(res) {
@@ -477,6 +483,23 @@
         const search = $(this).val() || '';
         const length = Number($("#perPageStatus").val() || 10);
         loadDesaStatus(1, length, search);
+    });
+
+    $(document).on("click", ".sortable", function() {
+
+        let sortField = $(this).data("sort");
+
+        if (currentSort === sortField) {
+            currentDir = currentDir === "asc" ? "desc" : "asc";
+        } else {
+            currentSort = sortField;
+            currentDir = "asc";
+        }
+
+        let length = $("#perPageStatus").val() || 10;
+        let search = $("#searchInputStatus").val() || '';
+
+        loadDesaStatus(1, length, search, currentSort, currentDir);
     });
 
     // load pertama kali
@@ -713,14 +736,20 @@
 
 
     <script>
-    function loadKecamatanStatus(page = 1, length, search = '') {
+    let currentSortStatus = "ds.created_at";
+    let currentDirStatus = "desc";
+
+    function loadKecamatanStatus(page = 1, length, search = '', sort_by = currentSortStatus, sort_dir =
+        currentDirStatus) {
         $.ajax({
             url: "<?= base_url('document-kabupaten/all') ?>",
             type: "GET",
             data: {
                 page: page,
                 length: length,
-                search: search
+                search: search,
+                sort_by: sort_by,
+                sort_dir: sort_dir
             },
             dataType: "json",
             success: function(res) {
@@ -813,6 +842,23 @@
         const search = $(this).val() || '';
         const length = Number($("#perPageOnStatus").val() || 10);
         loadKecamatanStatus(1, length, search);
+    });
+
+    $(document).on("click", ".sortable-status", function() {
+
+        let sortField = $(this).data("sort");
+
+        if (currentSortStatus === sortField) {
+            currentDirStatus = currentDirStatus === "asc" ? "desc" : "asc";
+        } else {
+            currentSortStatus = sortField;
+            currentDirStatus = "asc";
+        }
+
+        let length = $("#perPageStatus").val() || 10;
+        let search = $("#searchInputStatus").val() || '';
+
+        loadKecamatanStatus(1, length, search, currentSortStatus, currentDirStatus);
     });
 
     // load pertama kali
