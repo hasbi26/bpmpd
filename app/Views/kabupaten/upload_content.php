@@ -43,7 +43,7 @@
 
 <div class="card-footer clearfix d-flex justify-content-center">
 
-    <div class="mt-2" id="paginationStatus"></div>
+    <div class="mt-2" id="pagination"></div>
 
 </div>
 

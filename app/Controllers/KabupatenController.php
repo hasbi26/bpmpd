@@ -31,96 +31,209 @@ class KabupatenController extends BaseController
 
 
 
-    public function getDataStatusKabupaten(){
-        
-        $page    = (int) ($this->request->getGet('page')   ?? 1);
-        $length  = (int) ($this->request->getGet('length') ?? 10);
-        $search  = trim((string) $this->request->getGet('search'));
-    
-        if ($page < 1)   $page = 1;
-        if ($length < 1) $length = 10;
-    
-        // Ambil desa_id dari session
-        $roleId   = session('role_id') ?? null;
-    
-        if (!$roleId) {
-            return $this->response->setStatusCode(401)->setJSON([
-                'recordsTotal'    => 0,
-                'recordsFiltered' => 0,
-                'data'            => [],
-                'message'         => 'Desa tidak teridentifikasi di session.'
-            ]);
-        }
-    
-        $db = \Config\Database::connect();
-        $builder = $db->table('document_submissions ds');
-        $builder->select('
-                ds.id,
-                ds.earmarked,
-                ds.non_earmarked,
-                ds.status_desa,
-                ds.status_kecamatan,
-                ds.keterangan_kecamatan,
-                ds.status_kabupaten,
-                ds.created_at,
-                dt.title,
-                dsa.nama,
-                dsa.id as desa_id,
-                dt.id as template_id,
-                kca.nama as kecamatan
-            ')
-            ->join('document_templates dt', 'dt.id = ds.template_id')
-            ->join('desa dsa', 'dsa.id = ds.desa_id')
-            ->join('kecamatan kca', 'kca.id = dsa.kecamatan_id')
-            ->where('ds.status_kecamatan', "submitted");
-    
-        if (!empty($search)) {
-            $builder->groupStart()
-                    ->like('dt.title', $search)
-                    ->orLike('dsa.nama', $search)
-                    ->groupEnd();
-        }
-    
-        // total setelah filter
-        $countBuilder = clone $builder;
-        $total = (int) $countBuilder->countAllResults();
-    
-        // pagination
-        $offset = ($page - 1) * $length;
-        $rows = $builder->orderBy('ds.created_at', 'DESC')
-                        ->limit($length, $offset)
-                        ->get()
-                        ->getResultArray();
-    
-        // Format hasil agar rapi ke frontend
-        $data = [];
-        $no = $offset + 1;
-        foreach ($rows as $row) {
-            $data[] = [
-                'id'           => $row['id'],
-                'no'           => $no++,
-                'tanggal'      => date('d-m-Y H:i', strtotime($row['created_at'])),
-                'title'        => $row['title'],
-                'desa_id'        => $row['desa_id'],
-                'template_id'     => $row['template_id'],
-                'nama'        => $row['nama'],
-                'kecamatan'        => $row['kecamatan'],
-                'earmarked'    => $row['earmarked'] ?? '-',
-                'non_earmarked'=> $row['non_earmarked'] ?? '-',
-                'status_desa'   => $row['status_desa'], // atau kombinasikan dgn kec/kab
-                'status_kecamatan' => $row['status_kecamatan'], // atau kombinasikan dgn kec/kab
-                'status_kabupaten' => $row['status_kabupaten'], // atau kombinasikan dgn kec/kab
-                'keterangan'   => ($row['keterangan_kecamatan'] == null) ? " " :  $row['keterangan_kecamatan'] == null,
-                'detail_url'   => base_url("document/detail/" . $row['id'])
-            ];
-        }
-    
-        return $this->response->setJSON([
-            'recordsTotal'    => $total,
-            'recordsFiltered' => $total,
-            'data'            => $data,
+
+    public function getDataStatusKabupaten()
+{
+    $page    = (int) ($this->request->getGet('page') ?? 1);
+    $length  = (int) ($this->request->getGet('length') ?? 10);
+    $search  = trim((string) $this->request->getGet('search'));
+
+    if ($page < 1)   $page = 1;
+    if ($length < 1) $length = 10;
+
+    $roleId = session('role_id') ?? null;
+
+    if (!$roleId) {
+        return $this->response->setStatusCode(401)->setJSON([
+            'recordsTotal'    => 0,
+            'recordsFiltered' => 0,
+            'data'            => [],
+            'pagination'      => [
+                'current_page' => 1,
+                'total_pages'  => 0,
+                'per_page'     => $length,
+                'total_records'=> 0
+            ],
+            'message' => 'Desa tidak teridentifikasi di session.'
         ]);
     }
+
+    $db = \Config\Database::connect();
+
+    $builder = $db->table('document_submissions ds');
+    $builder->select('
+            ds.id,
+            ds.earmarked,
+            ds.non_earmarked,
+            ds.status_desa,
+            ds.status_kecamatan,
+            ds.keterangan_kecamatan,
+            ds.status_kabupaten,
+            ds.created_at,
+            dt.title,
+            dsa.nama,
+            dsa.id as desa_id,
+            dt.id as template_id,
+            kca.nama as kecamatan
+        ')
+        ->join('document_templates dt', 'dt.id = ds.template_id')
+        ->join('desa dsa', 'dsa.id = ds.desa_id')
+        ->join('kecamatan kca', 'kca.id = dsa.kecamatan_id')
+        ->where('ds.status_kecamatan', 'submitted');
+
+    if (!empty($search)) {
+        $builder->groupStart()
+            ->like('dt.title', $search)
+            ->orLike('dsa.nama', $search)
+            ->groupEnd();
+    }
+
+    // total data setelah filter
+    $countBuilder = clone $builder;
+    $total = (int) $countBuilder->countAllResults();
+
+    // hitung total halaman
+    $totalPages = ($total > 0) ? ceil($total / $length) : 1;
+
+    // offset
+    $offset = ($page - 1) * $length;
+
+    $rows = $builder->orderBy('ds.created_at', 'DESC')
+        ->limit($length, $offset)
+        ->get()
+        ->getResultArray();
+
+    $data = [];
+    $no = $offset + 1;
+
+    foreach ($rows as $row) {
+
+        $data[] = [
+            'id' => $row['id'],
+            'no' => $no++,
+            'tanggal' => date('d-m-Y H:i', strtotime($row['created_at'])),
+            'title' => $row['title'],
+            'desa_id' => $row['desa_id'],
+            'template_id' => $row['template_id'],
+            'nama' => $row['nama'],
+            'kecamatan' => $row['kecamatan'],
+            'earmarked' => $row['earmarked'] ?? '-',
+            'non_earmarked' => $row['non_earmarked'] ?? '-',
+            'status_desa' => $row['status_desa'],
+            'status_kecamatan' => $row['status_kecamatan'],
+            'status_kabupaten' => $row['status_kabupaten'],
+            'keterangan' => $row['keterangan_kecamatan'] ?? " ",
+            'detail_url' => base_url("document/detail/" . $row['id'])
+        ];
+    }
+
+    return $this->response->setJSON([
+        'recordsTotal' => $total,
+        'recordsFiltered' => $total,
+        'data' => $data,
+
+        // objek pagination
+        'pagination' => [
+            'current_page' => $page,
+            'total_pages' => $totalPages,
+            'per_page' => $length,
+            'total_records' => $total
+        ]
+    ]);
+}
+
+
+
+    // public function getDataStatusKabupaten(){
+        
+    //     $page    = (int) ($this->request->getGet('page')   ?? 1);
+    //     $length  = (int) ($this->request->getGet('length') ?? 10);
+    //     $search  = trim((string) $this->request->getGet('search'));
+    
+    //     if ($page < 1)   $page = 1;
+    //     if ($length < 1) $length = 10;
+    
+    //     // Ambil desa_id dari session
+    //     $roleId   = session('role_id') ?? null;
+    
+    //     if (!$roleId) {
+    //         return $this->response->setStatusCode(401)->setJSON([
+    //             'recordsTotal'    => 0,
+    //             'recordsFiltered' => 0,
+    //             'data'            => [],
+    //             'message'         => 'Desa tidak teridentifikasi di session.'
+    //         ]);
+    //     }
+    
+    //     $db = \Config\Database::connect();
+    //     $builder = $db->table('document_submissions ds');
+    //     $builder->select('
+    //             ds.id,
+    //             ds.earmarked,
+    //             ds.non_earmarked,
+    //             ds.status_desa,
+    //             ds.status_kecamatan,
+    //             ds.keterangan_kecamatan,
+    //             ds.status_kabupaten,
+    //             ds.created_at,
+    //             dt.title,
+    //             dsa.nama,
+    //             dsa.id as desa_id,
+    //             dt.id as template_id,
+    //             kca.nama as kecamatan
+    //         ')
+    //         ->join('document_templates dt', 'dt.id = ds.template_id')
+    //         ->join('desa dsa', 'dsa.id = ds.desa_id')
+    //         ->join('kecamatan kca', 'kca.id = dsa.kecamatan_id')
+    //         ->where('ds.status_kecamatan', "submitted");
+    
+    //     if (!empty($search)) {
+    //         $builder->groupStart()
+    //                 ->like('dt.title', $search)
+    //                 ->orLike('dsa.nama', $search)
+    //                 ->groupEnd();
+    //     }
+    
+    //     // total setelah filter
+    //     $countBuilder = clone $builder;
+    //     $total = (int) $countBuilder->countAllResults();
+    
+    //     // pagination
+    //     $offset = ($page - 1) * $length;
+    //     $rows = $builder->orderBy('ds.created_at', 'DESC')
+    //                     ->limit($length, $offset)
+    //                     ->get()
+    //                     ->getResultArray();
+    
+    //     // Format hasil agar rapi ke frontend
+    //     $data = [];
+    //     $no = $offset + 1;
+    //     foreach ($rows as $row) {
+    //         $data[] = [
+    //             'id'           => $row['id'],
+    //             'no'           => $no++,
+    //             'tanggal'      => date('d-m-Y H:i', strtotime($row['created_at'])),
+    //             'title'        => $row['title'],
+    //             'desa_id'        => $row['desa_id'],
+    //             'template_id'     => $row['template_id'],
+    //             'nama'        => $row['nama'],
+    //             'kecamatan'        => $row['kecamatan'],
+    //             'earmarked'    => $row['earmarked'] ?? '-',
+    //             'non_earmarked'=> $row['non_earmarked'] ?? '-',
+    //             'status_desa'   => $row['status_desa'], // atau kombinasikan dgn kec/kab
+    //             'status_kecamatan' => $row['status_kecamatan'], // atau kombinasikan dgn kec/kab
+    //             'status_kabupaten' => $row['status_kabupaten'], // atau kombinasikan dgn kec/kab
+    //             'keterangan'   => ($row['keterangan_kecamatan'] == null) ? " " :  $row['keterangan_kecamatan'] == null,
+    //             'detail_url'   => base_url("document/detail/" . $row['id'])
+    //         ];
+    //     }
+    
+    //     return $this->response->setJSON([
+    //         'recordsTotal'    => $total,
+    //         'recordsFiltered' => $total,
+    //         'data'            => $data,
+    //     ]);
+    // }
 
 
     public function KabupatenDetail($id,$idTemplate,$desa)
