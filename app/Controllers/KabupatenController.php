@@ -75,7 +75,7 @@ class KabupatenController extends BaseController
             ds.status_kecamatan,
             ds.keterangan_kecamatan,
             ds.status_kabupaten,
-            kca.created_at,
+            ds.status_kecamatan_at,
             dt.title,
             dsa.nama,
             dsa.id as desa_id,
@@ -119,7 +119,7 @@ class KabupatenController extends BaseController
         $data[] = [
             'id' => $row['id'],
             'no' => $no++,
-            'tanggal' => date('d-m-Y H:i', strtotime($row['created_at'])),
+            'tanggal' => date('d-m-Y H:i', strtotime($row['status_kecamatan_at'])),
             'title' => $row['title'],
             'desa_id' => $row['desa_id'],
             'template_id' => $row['template_id'],
