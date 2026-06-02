@@ -22,7 +22,15 @@ class AuthController extends BaseController
 
     public function loginpage() {
 
-        return view('login_form');
+        $data = [];
+
+        $customBg = FCPATH . 'assets/adminlte/img/login-bg.jpg';
+        $bgFile = file_exists($customBg) 
+                    ? base_url('assets/adminlte/img/login-bg.jpg') 
+                    : base_url('assets/adminlte/img/bg-login.jpg');
+        $data['bgFile'] = $bgFile;
+
+        return view('login_form', $data);
 
     }
 

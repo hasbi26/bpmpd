@@ -3,7 +3,7 @@
   <!--begin::Head-->
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>BPMPD | <?= esc(ucfirst($user['username']));?></title>
+    <title>DPMD | <?= esc(ucfirst($user['username']));?></title>
     <!--begin::Accessibility Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <meta name="color-scheme" content="light dark" />
@@ -15,11 +15,11 @@
     <meta name="author" content="ColorlibHQ" />
     <meta
       name="description"
-      content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS. Fully accessible with WCAG 2.1 AA compliance."
+      content="Dinas Pemberdayaan Masyarakat Dan Desa"
     />
     <meta
       name="keywords"
-      content="bootstrap 5, bootstrap, bootstrap 5 admin dashboard, bootstrap 5 dashboard, bootstrap 5 charts, bootstrap 5 calendar, bootstrap 5 datepicker, bootstrap 5 tables, bootstrap 5 datatable, vanilla js datatable, colorlibhq, colorlibhq dashboard, colorlibhq admin dashboard, accessible admin panel, WCAG compliant"
+      content="Dinas Pemberdayaan Masyarakat Dan Desa Kabupaten Sumedang"
     />
     <!--end::Primary Meta Tags-->
     <!--begin::Accessibility Features-->
@@ -185,7 +185,7 @@
         <!--end::To the end-->
         <!--begin::Copyright-->
         <strong>
-          BPMPD | Kabupaten Sumedang        </strong>
+        DPMD | Kabupaten Sumedang        </strong>
         
         <!--end::Copyright-->
       </footer>
@@ -194,11 +194,21 @@
     <!--end::App Wrapper-->
     <!--begin::Script-->
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
   
   function waitForElements(selectors, callback) {
     const foundElements = {};
+
+    // 🔑 langsung cek dulu sebelum observer
+    selectors.forEach(sel => {
+        if (document.querySelector(sel)) {
+            foundElements[sel] = true;
+            callback(sel, document.querySelector(sel));
+        }
+    });
+
     const observer = new MutationObserver(() => {
         selectors.forEach(sel => {
             if (!foundElements[sel] && document.querySelector(sel)) {
@@ -207,15 +217,13 @@
             }
         });
 
-        // kalau semua selector sudah ketemu → stop observer
         if (Object.keys(foundElements).length === selectors.length) {
             observer.disconnect();
         }
     });
+
     observer.observe(document.body, { childList: true, subtree: true });
 }
-
-  
   </script>
 
 
@@ -258,8 +266,6 @@
         }
       });
     </script>
-
-
 <script>
 // Fungsi terpisah untuk load content
 function loadContent(contentType) {
@@ -268,35 +274,36 @@ function loadContent(contentType) {
     console.error('Target element #dynamic-content not found');
     return;
   }
+  dynamicContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-success" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
-  dynamicContent.innerHTML = '<div class="text-center py-5">Memuat data... dashboard</div>';
-
-  fetch(`/load-content/${contentType}?role=<?= esc(ucfirst($user['role'])) ?>`)
+  fetch(`/load-content/${contentType}?role=<?= esc($user['role']) ?>`)
     .then(response => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.text();
     })
     .then(html => {
       dynamicContent.innerHTML = html;
-    waitForElements(['#desaTableBody', '#kecamatanTableBody'], (selector, el) => {
+    waitForElements(['#desaTableBody', '#kecamatanTableBody', '#nav-tabContent', '#imageLoader'], (selector, el) => {
         if (selector === '#desaTableBody') {
-            loadDesaTemplates();
+            LoadDocumentDesa(1, 10, "");
+
               // Fill Edit Desa Modal
               document.getElementById('desaTableBody').addEventListener('click', function(e) {
             if (e.target.closest('.btnEditDesa')) {
                 const btn = e.target.closest('.btnEditDesa');
-                document.getElementById('desa_id').value = btn.dataset.id;
-                document.getElementById('desa_title').value = btn.dataset.title;
-                document.getElementById('desa_deskripsi').value = btn.dataset.deskripsi;
-                       // ✅ set checkbox berdasarkan data-is_active
-                const isActiveCheckbox = document.getElementById('desa_is_active');
-                isActiveCheckbox.checked = btn.dataset.is_active === "1";
+                editDocument(btn.dataset.id);
+                 //document.getElementById('desa_id').value = btn.dataset.id;
+                // document.getElementById('desa_title').value = btn.dataset.title;
+                // document.getElementById('desa_deskripsi').value = btn.dataset.deskripsi;
+                //        // ✅ set checkbox berdasarkan data-is_active
+                //  const isActiveCheckbox = document.getElementById('desa_is_active');
+                //  isActiveCheckbox.checked = btn.dataset.is_active === "1";
             }
         });
         
           }
         if (selector === '#kecamatanTableBody') {
-            loadKecamatanTemplates();
+          LoadDocumentKecamatan(1, 10, "");
 
             document.getElementById('kecamatanTableBody').addEventListener('click', function(e) {
             if (e.target.closest('.btnEditKecamatan')) {
@@ -309,6 +316,12 @@ function loadContent(contentType) {
                 isActiveCheckbox.checked = btn.dataset.is_active === "1";
             }
         });
+        }
+        if (selector === '#nav-tabContent') {
+          renderNav();
+        }
+        if (selector === '#imageLoader') {
+          loadImage(); // load pertama kali
         }
 
       });
@@ -376,9 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const initialContent = document.querySelector(`#${currentActiveMenu}`)?.dataset.content || 'status';
   loadContent(initialContent);
 });
-
 </script>
-
 <script>
 function submitTemplateForm(event, type, id) {
     event.preventDefault();
@@ -402,130 +413,143 @@ function submitTemplateForm(event, type, id) {
     });
 }
 </script>
-
-
 <script>
-function loadDesaTemplates() {
-    fetch('<?= base_url('templates/get_desa') ?>')
-        .then(response => response.json())
-        .then(res => {
-            let tbody = document.getElementById('desaTableBody');
-            tbody.innerHTML = '';
+  
+  const baseDeleteUrl = "<?= base_url('templates/delete_desa/') ?>";
 
-            if (res.success && res.data.length > 0) {
-                let no = 1;
-                res.data.forEach(desa => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${no++}</td>
-                            <td>${desa.title}</td>
-                            <td>${desa.deskripsi ?? ''}</td>
-                            <td>${desa.username}</td>
-                            <td>
-                            ${desa.is_active == 1 
-                            ? '<i class="bi bi-check2-square text-success"></i>' 
-                            : '<i class="bi bi-dash-square text-danger"></i>'}
-                            </td>
-                            <td>${desa.created_at}</td>
-                            <td>
+function LoadDocumentDesa(page = 1, length = 10, search = "") {
+    $.ajax({
+      url: "<?= site_url('templates/get_templates') ?>",
+      method: "GET",
+      data: {
+        page: page,
+        length: length,
+        search: search
+      },
+      success: function (res) {
+        let rows = "";
+        let no = (page - 1) * length + 1;
+
+        if (res.data.length > 0) {
+          res.data.forEach(function (item) {
+            rows += `
+              <tr>
+                <td>${no++}</td>
+                <td>${item.title}</td>
+                <td>${item.deskripsi ?? '-'}</td>
+                <td>${item.username ?? '-'}</td>
+                <td>
+                ${item.is_active == 1 
+                  ? '<i class="bi bi-check2-square text-success"></i>' 
+                  : '<i class="bi bi-dash-square text-danger"></i>'}
+                  </td>
+                  <td>${item.created_at ?? '-'}</td>
+                  <td>
                                 <button class="btn btn-warning btn-sm btnEditDesa" 
-                                    data-id="${desa.id}" 
-                                    data-title="${desa.title}" 
-                                    data-is_active="${desa.is_active}" 
-                                    data-deskripsi="${desa.deskripsi ?? ''}"
+                                    data-id="${item.id}" 
+                                    data-title="${item.title}" 
+                                    data-is_active="${item.is_active}" 
+                                    data-deskripsi="${item.deskripsi ?? ''}"
                                     data-bs-toggle="modal" 
                                     data-bs-target="#modalEditDesa">
                                     <i class="bi bi-pencil-square"></i>
                                     
                                 </button>
-                                <a href="<?= base_url('templates/delete_desa/') ?>${desa.id}" 
-                                   class="btn btn-danger btn-sm" 
-                                   onclick="return confirm('Hapus template ini?')">
-                                   <i class="bi bi-trash"></i>                                </a>
+                                <button 
+                                          class="btn btn-danger btn-sm btnDeleteDesa" 
+                                          data-id="${item.id}"
+                                          data-title="${item.title}"
+                                          data-bs-toggle="modal"
+                                          data-bs-target="#modalDeleteDesa">
+                                          <i class="bi bi-trash"></i>
+                                        </button>
                             </td>
-                        </tr>
-                    `;
-                });
-            } else {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center">Tidak ada data</td>
-                    </tr>
-                `;
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            document.getElementById('desaTableBody').innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center text-danger">Gagal memuat data</td>
-                </tr>
+              </tr>
             `;
-        });
+          });
+        } else {
+          rows = `<tr><td colspan="5" class="text-center">Tidak ada data</td></tr>`;
+        }
+
+        $("#desaTableBody").html(rows);
+
+        // ✅ buat pagination bootstrap
+        let totalPages = Math.ceil(res.recordsTotal / length);
+        let pagination = `
+          <ul class="pagination pagination-sm m-0 float-end">
+        `;
+
+        // tombol prev
+        let prevPage = page > 1 ? page - 1 : 1;
+        pagination += `
+          <li class="page-item ${page === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${prevPage}">&laquo;</a>
+          </li>
+        `;
+
+        // nomor halaman
+        for (let i = 1; i <= totalPages; i++) {
+          pagination += `
+            <li class="page-item ${i === page ? 'active' : ''}">
+              <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>
+          `;
+        }
+
+        // tombol next
+        let nextPage = page < totalPages ? page + 1 : totalPages;
+        pagination += `
+          <li class="page-item ${page === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${nextPage}">&raquo;</a>
+          </li>
+        `;
+
+        pagination += `</ul>`;
+
+        $("#pagination").html(pagination);
       }
+    });
+  }
 
-function loadKecamatanTemplates() {
-    fetch('<?= base_url('templates/get_kecamatan') ?>')
-        .then(response => response.json())
-        .then(res => {
-            let tbody = document.getElementById('kecamatanTableBody');
-            tbody.innerHTML = '';
 
-            if (res.success && res.data.length > 0) {
-                let no = 1;
-                res.data.forEach(kecamatan => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${no++}</td>
-                            <td>${kecamatan.title}</td>
-                            <td>${kecamatan.deskripsi ?? ''}</td>
-                            <td>${kecamatan.username}</td>
-                            <td>
-                            ${kecamatan.is_active == 1 
-                            ? '<i class="bi bi-check2-square text-success"></i>' 
-                            : '<i class="bi bi-dash-square text-danger"></i>'}
-                            </td>
-                            <td>${kecamatan.created_at}</td>
-                            <td>
-                                <button class="btn btn-warning btn-sm btnEditKecamatan" 
-                                    data-id="${kecamatan.id}" 
-                                    data-title="${kecamatan.title}" 
-                                    data-is_active="${kecamatan.is_active}" 
-                                    data-deskripsi="${kecamatan.deskripsi ?? ''}"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#modalEditKecamatan">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-                                <a href="<?= base_url('templates/delete_kecamatan/') ?>${kecamatan.id}" 
-                                   class="btn btn-danger btn-sm" 
-                                   onclick="return confirm('Hapus template ini?')">
-                                   <i class="bi bi-trash"></i>                                </a>
-                                </a>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } else {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center">Tidak ada data</td>
-                    </tr>
-                `;
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            document.getElementById('kecamatanTableBody').innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center text-danger">Gagal memuat data</td>
-                </tr>
-            `;
-        });
-      }
+  $(document).on("click", ".btnDeleteDesa", function () {
+  let id = $(this).data("id");
+  let title = $(this).data("title");
+  $("#deleteTemplateId").val(id);
+  $("#deleteTemplateTitle").text(title);
+});
 
-// Panggil saat halaman dimuat
-document.addEventListener('DOMContentLoaded', loadKecamatanTemplates);
-document.addEventListener('DOMContentLoaded', loadDesaTemplates);
+
+  // 🚀 handler pagination klik
+  $(document).on("click", "#pagination a.page-link", function (e) {
+    e.preventDefault();
+    let page = $(this).data("page");
+    let length = $("#perPage").val();
+    let search = $("#searchInput").val();
+    if (page) {
+      LoadDocumentDesa(page, length, search);
+    }
+  });
+
+  // 🚀 handler ganti jumlah per halaman
+  $(document).on("change", "#perPage", function () {
+    let length = $(this).val();
+    let search = $("#searchInput").val();
+    LoadDocumentDesa(1, length, search);
+  });
+
+  // 🚀 handler search
+  $(document).on("keyup", "#searchInput", function () {
+    let search = $(this).val();
+    let length = $("#perPage").val();
+    LoadDocumentDesa(1, length, search);
+  });
+
+  // 🚀 pertama kali load
+  LoadDocumentDesa(1, 10, "");
+
+document.addEventListener('DOMContentLoaded', () => LoadDocumentDesa(1, 10, ""));
+
 </script>
 
 <script>
@@ -538,8 +562,190 @@ document.addEventListener('DOMContentLoaded', loadDesaTemplates);
         }
     }, 3000); // 5000ms = 5 detik
 </script>
+  
+
+<script>
+  function renderNav(){
+  $(document).on("click", "#add-desa", function () {
+    $("#desa-container").append(`
+      <div class="input-group mb-2 desa-input">
+        <input type="text" name="desa[]" class="form-control" placeholder="Nama Document Desa">
+        <button class="btn btn-danger remove-desa" type="button">Hapus</button>
+      </div>
+    `);
+  });
+
+  // Hapus Desa
+  $(document).on("click", ".remove-desa", function() {
+    $(this).closest(".desa-input").remove();
+  });
+
+  $(document).on("click", "#add-kecamatan", function() {
+    $("#kecamatan-container").append(`
+      <div class="input-group mb-2 kecamatan-input">
+        <input type="text" name="kecamatan[]" class="form-control" placeholder="Nama Kecamatan">
+        <button class="btn btn-danger remove-kecamatan" type="button">Hapus</button>
+      </div>
+    `);
+
+  });
+
+  // Hapus Kecamatan
+  $(document).on("click", ".remove-kecamatan", function() {
+    $(this).closest(".kecamatan-input").remove();
+  });
+
+  }
+</script>
+
+<script>
+function editDocument(idDoc){
+
+  // let id = $(this).data("id");
+let id =idDoc
+  // kosongkan container dulu
+  $("#desa-container-edit").html("");
+  $("#kecamatan-container-edit").html("");
+  $.ajax({
+  url: "<?= site_url('templates/edit') ?>/" + id,
+  type: "GET",
+  success: function (res) {
+    console.log(res);
+
+    if (res.length > 0) {
+      // isi field utama
+      $("#edit_id").val(res[0].id);
+      $("#edit_title").val(res[0].title);
+      $("#edit_deskripsi").val(res[0].deskripsi ?? "");
+
+      // kosongkan container dulu biar gak dobel saat buka modal kedua kali
+      $("#desa-container-edit").empty();
+      $("#kecamatan-container-edit").empty();
+
+      // render detail berdasarkan role
+      res.forEach(function (item) {
+        if (item.role === "desa") {
+          $("#desa-container-edit").append(`
+            <div class="input-group mb-2 desa-input">
+              <input type="text" name="desa[]" class="form-control" value="${item.nama_file}" placeholder="Nama Document Desa">
+              <button class="btn btn-danger remove-desa" type="button">Hapus</button>
+            </div>
+          `);
+        }
+        if (item.role === "kecamatan") {
+          $("#kecamatan-container-edit").append(`
+            <div class="input-group mb-2 kecamatan-input">
+              <input type="text" name="kecamatan[]" class="form-control" value="${item.nama_file}" placeholder="Nama Kecamatan">
+              <button class="btn btn-danger remove-kecamatan" type="button">Hapus</button>
+            </div>
+          `);
+        }
+      });
+
+      if (res[0].is_active == "1") {
+      $("#edit_is_active").prop("checked", true);
+    } else {
+      $("#edit_is_active").prop("checked", false);
+    }
+
+
+      // kalau kosong sama sekali kasih input default
+      if ($("#desa-container-edit").children().length === 0) {
+        $("#desa-container-edit").append(`
+          <div class="input-group mb-2 desa-input">
+            <input type="text" name="desa[]" class="form-control" placeholder="Nama Document Desa">
+            <button class="btn btn-danger remove-desa" type="button">Hapus</button>
+          </div>
+        `);
+      }
+      if ($("#kecamatan-container-edit").children().length === 0) {
+        $("#kecamatan-container-edit").append(`
+          <div class="input-group mb-2 kecamatan-input">
+            <input type="text" name="kecamatan[]" class="form-control" placeholder="Nama Kecamatan">
+            <button class="btn btn-danger remove-kecamatan" type="button">Hapus</button>
+          </div>
+        `);
+      }
+    }
+  }
+});
+
+  // Tambah Desa Edit
+$(document).on("click", "#add-desa-edit", function () {
+  $("#desa-container-edit").append(`
+    <div class="input-group mb-2 desa-input">
+      <input type="text" name="desa[]" class="form-control" placeholder="Nama Document Desa">
+      <button class="btn btn-danger remove-desa" type="button">Hapus</button>
+    </div>
+  `);
+});
+
+// Hapus Desa
+$(document).on("click", ".remove-desa", function () {
+  $(this).closest(".desa-input").remove();
+});
+
+// Tambah Kecamatan Edit
+$(document).on("click", "#add-kecamatan-edit", function () {
+  $("#kecamatan-container-edit").append(`
+    <div class="input-group mb-2 kecamatan-input">
+      <input type="text" name="kecamatan[]" class="form-control" placeholder="Nama Kecamatan">
+      <button class="btn btn-danger remove-kecamatan" type="button">Hapus</button>
+    </div>
+  `);
+});
+
+// Hapus Kecamatan
+$(document).on("click", ".remove-kecamatan", function () {
+  $(this).closest(".kecamatan-input").remove();
+});
+
+
+}
 
 
 
-  </body>
+</script>
+
+
+<script>
+  function loadImage() {
+    $.get("<?= base_url('admin/getBackground') ?>?t=" + Date.now(), function(res) {
+        let html = "";
+
+        if (res.image) {
+            html += `
+                <div class="mt-3">
+                    <label>Wallpaper saat ini:</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="${res.image}" alt="Background" class="img-thumbnail" style="max-width: 200px;">
+                        <button class="btn btn-danger btn-sm" onclick="deleteBackground()">Hapus</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            html = `<p class="text-muted">Belum ada background custom.</p>`;
+        }
+
+        document.getElementById("imageLoader").innerHTML = html;
+    });
+}
+
+
+
+function deleteBackground() {
+    if (!confirm("Hapus background ini?")) return;
+
+    $.post("<?= base_url('admin/deleteBackground') ?>", {
+        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+    }, function(res) {
+        alert(res.message);
+        loadImage(); // reload thumbnail setelah hapus
+    });
+}
+
+</script>
+
+
+</body>
 </html>

@@ -2,6 +2,7 @@
 namespace App\Controllers;
 use App\Models\DocumentTemplatesDesaModel;
 use App\Models\DocumentTemplatesKecamatanModel;
+use App\Models\DesaModel;
 
 class ContentController extends BaseController
 {
@@ -19,7 +20,8 @@ class ContentController extends BaseController
     {
         try {
             $role = $this->request->getGet('role');
-    
+
+        
             log_message('info', "Mencoba load content: role={$role}, type={$type}");
     
             // Validasi parameter wajib
@@ -34,7 +36,7 @@ class ContentController extends BaseController
             }
     
             // Daftar konten yang valid
-            $validContents = ['status', 'upload', 'settings'];
+            $validContents = ['status', 'upload', 'settings','profil'];
             if (!in_array($type, $validContents)) {
                 throw new \CodeIgniter\Exceptions\PageNotFoundException('Tipe konten tidak valid');
             }
@@ -48,21 +50,38 @@ class ContentController extends BaseController
             }
             $namaWilayah = $this->session->get('wilayah_nama');
             $template    = null;
+            $idprofil = null;
+            $profilDesa = null;
+            $search = null;
             
             if ($role == "desa") {
                 // pakai model desa
-                $template = $this->templateDesaModel->getActiveTemplates();                    
+                $template = $this->templateDesaModel->getActiveTemplates(); 
+                $idprofil =  $this->session->get('role_id');    
+                $desaModel = new \App\Models\DesaModel();
+                $profilDesa = $desaModel->getProfilDesa($idprofil);
             } elseif ($role == "kecamatan") {
-                // sementara kecamatan belum dipaginasi
                 $template = $this->templateKecamatanModel->getActiveTemplates();
-                // $pager = $this->templateKecamatanModel->pager;
-            }
+                $idprofil =  $this->session->get('role_id');  
+            }elseif ($role == "kabupaten"){
+                
+                $desaModel = new \App\Models\DesaModel();
+
+                $page   = (int) ($this->request->getGet('page') ?? 1);
+                $length = (int) ($this->request->getGet('length') ?? 10);
+                $search = trim((string) $this->request->getGet('search'));
+            
+                $profilDesa = $desaModel->getAllProfilDesa($search, $length, $page);
+            } 
             
             return view($viewPath, [
                 'role'        => $role,
                 'type'        => $type,
                 'namaWilayah' => $namaWilayah,
                 'templates'   => $template,
+                'idprofil'    => $idprofil,
+                'profilDesa' =>  $profilDesa,
+                'search'    =>  $search,
             ]);
             
         

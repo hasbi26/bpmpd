@@ -105,7 +105,7 @@
             <div class="input-group mb-3">
                 <select class="form-select" id="" name="role" required>
                           <option selected disabled value="">Pilih role</option>
-                          <option value="sa">Sa</option>
+                          <option value="sa">sa</option>
                           <option value="admin">admin</option>
                           </select>
                           <!-- <div class="invalid-feedback">Please select a valid state.</div> -->

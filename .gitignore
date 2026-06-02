@@ -1,3 +1,7 @@
 /vendor/
 /writable/
 .env
+public/uploads/
+backup/
+bpmpd.zip
+cgi-bin/

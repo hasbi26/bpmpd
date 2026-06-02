@@ -240,16 +240,11 @@ class SuperAdminController extends BaseController
 
     public function loginadmin()
     {
-
-
-        // Validasi input
         $rules = [
             'username' => 'required',
             'password' => 'required|min_length[6]',
             'role' => 'required|in_list[sa,admin]'
         ];
-
-        // $userAdminModel = new UserAdminModel();
 
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
@@ -259,7 +254,7 @@ class SuperAdminController extends BaseController
 // Jika user tidak ditemukan
 if (!$user) {
     // Cek apakah username ada tapi role tidak sesuai
-    $userWithDifferentRole = $this->userModel->where('username', $username)->first();
+    $userWithDifferentRole = $this->$userModel->where('username', $username)->first();
     
     if ($userWithDifferentRole) {
         // Username ada tapi role tidak sesuai
@@ -319,4 +314,42 @@ if (!password_verify($password, $user['password'])) {
                 return redirect()->to('/');
         }
     }
+
+
+   public function uploadBackground(){
+
+    $file = $this->request->getFile('background');
+        
+    if ($file && $file->isValid() && !$file->hasMoved()) {
+        // pakai nama fix supaya gampang dicek
+        $newName = 'login-bg.' . $file->getExtension(); 
+        $file->move(FCPATH . 'assets/adminlte/img', $newName, true);
+
+        return redirect()->to('/admindashboard')->with('success', 'Background berhasil diubah!');
+    }
+    return redirect()->to('/admindashboard')->with('error', 'Upload gagal!');
+
+
+   }
+    public function  getBackground(){
+        $customBgPath = FCPATH . 'assets/adminlte/img/login-bg.jpg';
+        $customBgUrl  = file_exists($customBgPath)
+            ? base_url('assets/adminlte/img/login-bg.jpg')
+            : null;
+    
+        return $this->response->setJSON([
+            'image' => $customBgUrl
+        ]);
+
+    }
+
+   public function deleteBackground(){
+    $filePath = FCPATH . 'assets/adminlte/img/login-bg.jpg';
+
+    if (file_exists($filePath)) {
+        unlink($filePath);
+        return redirect()->to('/admindashboard')->with('success', 'Background berhasil dihapus');
+    }    
+    return redirect()->to('/admindashboard')->with('error', 'Background gagal dihapus');
+   }
 }

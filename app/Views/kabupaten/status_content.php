@@ -1,43 +1,109 @@
-<h3 class="mb-3" id="content-title">Status Document <?= esc(ucfirst($role)) ?> <?= esc(ucfirst(strtolower($namaWilayah))) ?> </h3>
-        <!-- begin table -->
-              <div class="card-body p-0">
-                    <table class="table table-striped">
-                      <thead>
-                        <tr>
-                          <th style="width: 10px">No</th>
-                          <th>Tanggal Upload</th>
-                          <th>Desa</th>
-                          <th>Jenis Dokumen</th>
-                          <th>Keterangan</th>
-                          <th>Status</th>
-                          <th>Verifikasi</th>
-                          <th>Tanggal Verifikasi</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr class="align-middle">
-                          <td>1.</td>
-                          <td>07/08/2025 8:57:09</td>
-                          <td>Cimalaka</td>
-                          <td>Laporan realisasi dan capaian keluaran TA 2024  (laporan penyerapan Dana Desa (PMK) Tahun  2024 keluaran Siskeudesa)</td>
-                          <td>ada kesalahan tanggal segera perbaiki</td>
-                          <td><span class="badge text-bg-danger">Ditolak</span></td>
-                          <td><a href="<?= base_url('') ?>" class="btn btn-info btn-flat float-end">Verifikasi</a></td>
-                          <td>07/08/2025 8:57:09</td>
-                        </tr>
+<h3 class="mb-3" id="content-title">Status Document <?= esc(ucfirst($role)) ?>
+    <?= esc(ucfirst(strtolower($namaWilayah))) ?> </h3>
+<div class="d-flex justify-content-between mt-2 mb-3">
+    <div>
+        <label>
+            Tampilkan
+            <select id="perPageOnStatus" class="form-select d-inline-block w-auto">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+            </select>
+            entri
+        </label>
+    </div>
+    <div>
+        <input type="text" id="searchInputStatus" class="form-control" placeholder="Cari dokumen...">
+    </div>
+</div>
 
-                        <tr class="align-middle">
-                          <td>2.</td>
-                          <td>07/09/2025 10:57:09</td>
-                          <td>Galudra</td>
-                          <td>Surat Komitmen pembentukan KDMP</td>
-                          <td>Proses Verifikasi Kabupaten </td>
-                          <td><span class="badge text-bg-success">Diterima</span></td>
-                          <td> <a href="<?= base_url('') ?>" class="btn btn-info btn-flat float-end">Verifikasi</a></td>
-                          <td>07/08/2025 8:57:09</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
 
-              <!-- end table -->
+<!-- begin table -->
+<div class="card-body p-0">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th style="width: 10px">No</th>
+                <th class="sortable-status" data-sort="ds.created_at"> <i class="bi bi-arrow-down-up"></i> Tanggal
+                    Upload </th>
+                <th class="sortable-status" data-sort="kca.nama">Kecamatan</th>
+                <th class="sortable-status" data-sort="dsa.nama">Desa</th>
+                <th class="sortable-status" data-sort="dt.title">Document</th>
+                <th class="sortable-status" data-sort="ds.status_kecamatan">Status</th>
+                <th>Detail</th>
+            </tr>
+        </thead>
+        <tbody id="KecamatanStatusBody">
+
+        </tbody>
+    </table>
+</div>
+
+<!-- end table -->
+
+<div class="card-footer clearfix d-flex justify-content-center">
+
+    <div class="mt-2" id="paginationOnStatus"></div>
+
+</div>
+
+
+
+<div class="modal fade" id="modalStatusDetailKabupaten" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form action="<?= base_url('templates/reverifikasi-kabupaten') ?>" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="id_template" id="id_template">
+            <input type="hidden" name="id_submission" id="id_submission">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title m-0">Detail Template : <span id="uploadDesaTitle"></span></h5>
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <div class="row">
+
+                            <div class="col-md-3">
+                                <label>Reguler </label>
+                                <input disabled type="text" name="earmarked" id="earmarked" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label>Non Reguler</label>
+                                <input disabled type="text" name="non_earmarked" id="non_earmarked"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label>Status Document</label>
+                                <select name="status_kecamatan_new" id="status_kecamatan_new" class="form-control">
+                                    <option value="" selected>-- Pilih Status --</option>
+                                    <option value="submitted">Verifikasi Ulang</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label>Status Pengejuan</label>
+                                <select name="status_pengejuan" id="status_pengejuan" class="form-control">
+                                    <option value="" selected>-- Pilih Status --</option>
+                                    <option value="Pengajuan KPPN">Pengajuan KPPN</option>
+                                    <option value="SP2D">SP2D</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exampleTextarea" class="form-label">Keterangan</label>
+                            <textarea disabled class="form-control" id="keterangan" name="keterangan"
+                                id="keterangan_kecamatan" rows="2" placeholder=""></textarea>
+                        </div>
+
+                        <div id="KabupatenDetail"></div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-success">submit</button>
+
+                    </div>
+                </div>
+        </form>
+    </div>
+</div>

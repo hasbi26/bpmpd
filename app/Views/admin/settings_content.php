@@ -92,7 +92,43 @@ input[type="text"].show-password {
       </form>
     </div>
   </div>
+
+
+  <div class="col-md-6 mt-2">
+  <div class="card card-success card-outline h-100">
+    <div class="card-header">
+      <div class="card-title">Update Wallpaper Login</div>
+    </div>
+
+    <!-- Form Upload -->
+    <form action="<?= base_url('admin/uploadBackground') ?>" method="POST" enctype="multipart/form-data">
+      <?= csrf_field() ?>
+      <div class="card-body">
+        <div class="form-group">
+          <input type="file" name="background" class="form-control" accept="image/*">
+        </div>
+        <div id="imageLoader">
+
+        </div>
+      </div>
+      <div class="card-footer">
+        <button type="submit" class="btn btn-success">Simpan</button>
+      </div>
+    </form>
+  </div>
 </div>
+
+
+
+
+
+
+</div>
+
+
+
+
+
 
 
 
