@@ -75,7 +75,7 @@ class KabupatenController extends BaseController
             ds.status_kecamatan,
             ds.keterangan_kecamatan,
             ds.status_kabupaten,
-            ds.created_at,
+            kca.created_at,
             dt.title,
             dsa.nama,
             dsa.id as desa_id,
