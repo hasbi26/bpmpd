@@ -16,7 +16,7 @@ class App extends BaseConfig
      *
      * E.g., http://example.com/
      */
-    public string $baseURL = 'http://localhost:8080/';
+    public string $baseURL = 'http://dpmdsumedang.or.id/';
 
     public $sessionDriver = 'CodeIgniter\Session\Handlers\FileHandler';
     public $sessionSavePath = WRITEPATH . 'session';

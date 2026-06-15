@@ -1,0 +1,55 @@
+ .gitignore                                     |    4 [32m+[m[31m-[m
+ DB/DataDesa.xlsx                               |  Bin [31m16958[m -> [32m0[m bytes
+ DB/DataKecamatan.xlsx                          |  Bin [31m9585[m -> [32m0[m bytes
+ DB/User.xlsx                                   |  Bin [31m19029[m -> [32m0[m bytes
+ DB/UserAdmin.xlsx                              |  Bin [31m9545[m -> [32m0[m bytes
+ DB/UserAdmin2.xlsx                             |  Bin [31m9529[m -> [32m0[m bytes
+ DB/tabletemplates.sql                          |   24 [31m-[m
+ app/Config/App.php                             |    2 [32m+[m[31m-[m
+ app/Config/Database.php                        |    6 [32m+[m[31m-[m
+ app/Config/Routes.php                          |   75 [32m+[m[31m--[m
+ app/Controllers/AdminDashboardController.php   |   37 [32m+[m[31m-[m
+ app/Controllers/AuthController.php             |   10 [32m+[m[31m-[m
+ app/Controllers/ContentController.php          |   31 [32m+[m[31m-[m
+ app/Controllers/DesaController.php             |  251 [32m+++++++++[m[31m-[m
+ app/Controllers/KabupatenController.php        |  555 [32m+++++++++++++++++++++[m[31m--[m
+ app/Controllers/KecamatanController.php        |  184 [32m+++++++[m[31m-[m
+ app/Controllers/Login.php                      |   62 [32m+[m[31m--[m
+ app/Controllers/SuperAdminController.php       |   45 [32m+[m[31m-[m
+ app/Controllers/TemplateController.php         |  558 [32m+++++++++++++++++[m[31m------[m
+ app/Controllers/UserController.php             |  132 [32m+++[m[31m---[m
+ app/Filters/AuthFilter.php                     |   66 [32m+[m[31m--[m
+ app/Helpers/auth_helper.php                    |  108 [32m++[m[31m---[m
+ app/Models/DesaModel.php                       |   50 [32m+[m[31m-[m
+ app/Models/DocumentTemplatesDesaModel.php      |   31 [32m+[m[31m-[m
+ app/Models/DocumentTemplatesKecamatanModel.php |   20 [32m+[m[31m-[m
+ app/Models/KecamatanModel.php                  |   28 [32m+[m[31m-[m
+ app/Models/PasswordResetModel.php              |   20 [32m+[m[31m-[m
+ app/Models/UserAdminModel.php                  |  238 [32m+++++[m[31m-----[m
+ app/Models/UserModel.php                       |  272 [32m+++++[m[31m------[m
+ app/Services/AuthLogger.php                    |   90 [32m++[m[31m--[m
+ app/Views/admin/settings_content.php           |   36 [32m++[m
+ app/Views/admin/status_content.php             |   43 [31m--[m
+ app/Views/admin/upload_content.php             |  325 [32m+++++++[m[31m------[m
+ app/Views/desa/dashboard.php                   |  419 [32m++++++++++++++++[m[31m-[m
+ app/Views/desa/status_content.php              |  103 [32m++++[m[31m-[m
+ app/Views/desa/upload_content.php              |   37 [32m+[m[31m-[m
+ app/Views/kabupaten/dashboard.php              | 1431 [32m+++++++++++++++++++++++++++++++++++++++++++++[m[31m-------------[m
+ app/Views/kabupaten/settings_content.php       |  262 [32m+++++[m[31m------[m
+ app/Views/kabupaten/status_content.php         |  152 [32m+++++[m[31m--[m
+ app/Views/kabupaten/upload_content.php         |  148 [32m++++[m[31m--[m
+ app/Views/kecamatan/dashboard.php              |  363 [32m++++++++++++++[m[31m-[m
+ app/Views/kecamatan/status_content.php         |  113 [32m+++[m[31m--[m
+ app/Views/kecamatan/upload_content.php         |   86 [32m+++[m[31m-[m
+ app/Views/login_form.php                       |   15 [32m+[m[31m-[m
+ app/Views/superadmin/admin_dashboard.php       |  478 [32m++++++++++++++[m[31m------[m
+ app/Views/superadmin/login.php                 |    2 [32m+[m[31m-[m
+ app/Views/templates/create.php                 |   76 [32m++[m[31m--[m
+ app/Views/templates/edit.php                   |   60 [32m+[m[31m--[m
+ app/Views/templates/index.php                  |   76 [32m++[m[31m--[m
+ app/Views/templates/partials/create_form.php   |   92 [32m++[m[31m--[m
+ app/Views/templates/partials/edit_form.php     |   92 [32m++[m[31m--[m
+ app/Views/templates/partials/list.php          |  156 [32m+++[m[31m----[m
+ public/assets/adminlte/img/dpmd.png            |  Bin [31m1013946[m -> [32m1065054[m bytes
+ public/favicon.ico                             |  Bin [31m5430[m -> [32m15406[m bytes
+ 54 files changed, 5418 insertions(+), 2046 deletions(-)
