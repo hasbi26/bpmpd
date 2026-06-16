@@ -13,6 +13,9 @@ use App\Models\DocumentSubmissionsModel;
 use App\Models\DesaModel;
 use Config\Database;
 
+use App\Libraries\LogSubmission;
+
+
 
 
 class DocumentKecamatanController extends Controller
@@ -327,6 +330,17 @@ class DocumentKecamatanController extends Controller
             }
     
             $db->transCommit();
+
+            LogSubmission::save(
+                $submissionId,
+                'kecamatan',
+                session()->get('user_id'),
+                'Verifikasi Dokumen',
+                $statusDesa,
+                '-',
+                $keteranganKecamatan
+            );
+
             return redirect()->to("{$role}/dashboard")->with('success', 'Verifikasi Berhasil');
 
         } catch (\Throwable $e) {

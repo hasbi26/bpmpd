@@ -95,11 +95,34 @@
 
                     </div>
                     <div class="modal-footer">
+                        <!-- Tombol kiri -->
+                        <button type="button" id="btnLogRiwayat" class="btn btn-info me-auto">
+                            Log Riwayat
+                        </button>
+                        </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                         <button type="submit" class="btn btn-primary">Simpan</button>
 
                     </div>
                 </div>
         </form>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalRiwayat" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Log Riwayat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="riwayatBody">
+                Loading...
+            </div>
+
+        </div>
     </div>
 </div>

@@ -88,6 +88,8 @@ $routes->post('templates/update_kecamatan', 'TemplateController::updateKecamatan
 $routes->get('document-desa/getStatus', 'DesaController::getDataStatus');
 $routes->get('document-kecamatan/getData', 'KecamatanController::getDataKecamatan');
 
+$routes->post('templates/kabupaten/get-riwayat', 'KabupatenController::getRiwayat');
+
 
 
 

@@ -11,6 +11,9 @@ use App\Models\DocumentTemplatesDetailModel;
 use App\Models\DocumentSubmissionsModel;
 use App\Models\DocumentSubmissionFilesModel;
 
+use App\Libraries\LogSubmission;
+
+
 
 class DocumentDesaController extends Controller
 {
@@ -434,6 +437,16 @@ public function upload_files()
             ]);
         }
 
+        LogSubmission::save(
+            $submissionId,
+            'desa',
+            session()->get('user_id'),
+            'Upload Dokumen',
+            null,
+            '-',
+            'Desa mengunggah dokumen'
+        );
+
         $db->transCommit();
         return $response->setJSON(['success' => true, 'message' => 'Dokumen berhasil disimpan']);
 
@@ -452,209 +465,6 @@ public function upload_files()
     }
 }
 
-
-
-// public function upload_files()
-//     {
-//         $request = service('request');
-//         $response = service('response');
-//         $db = \Config\Database::connect();
-
-//         // User login (desa)
-//         $desaId = session()->get('role_id'); // pastikan saat login Anda set role_id = id desa
-//         $role   = session()->get('role');    // 'desa'
-
-//         if ($role !== 'desa') {
-//             return $response->setJSON(['error' => 'Hanya desa yang bisa upload di tahap ini']);
-//         }
-
-//         $idTemplate   = (int) $request->getPost('id_template');
-//         $earmarked    = $request->getPost('earmarked');
-//         $nonEarmarked = $request->getPost('non_earmarked');
-
-//         // Validasi minimal
-//         if (!$idTemplate) {
-//             return $response->setJSON(['error' => 'id_template kosong. Pastikan input hidden di-set.']);
-//         }
-
-//         $submissionModel = new \App\Models\DocumentSubmissionsModel();
-//         $fileModel       = new \App\Models\DocumentSubmissionFilesModel();
-
-//         // Siapkan folder upload
-//         $uploadDir = FCPATH . 'uploads/desa';
-//         if (!is_dir($uploadDir)) {
-//             @mkdir($uploadDir, 0755, true);
-//         }
-//         if (!is_dir($uploadDir) || !is_writable($uploadDir)) {
-//             return $response->setJSON(['error' => 'Folder upload tidak bisa diakses: ' . $uploadDir]);
-//         }
-
-//         // Mulai transaksi (manual biar bisa commit/rollback + error detail)
-//         $db->transBegin();
-
-//         try {
-//             // Cek existing submission
-//             $submission = $submissionModel
-//                 ->where('template_id', $idTemplate)
-//                 ->where('desa_id', $desaId)
-//                 ->first();
-
-//             if ($submission) {
-//                 $ok = $submissionModel->update($submission['id'], [
-//                     'earmarked'       => $earmarked,
-//                     'non_earmarked'   => $nonEarmarked,
-//                     'status_desa'     => 'resubmitted',
-//                     'updated_at'      => date('Y-m-d H:i:s')
-//                 ]);
-//                 if ($ok === false) {
-//                     // Validasi model (jika Anda pakai $validationRules di model)
-//                     $dbErr = $db->error();
-//                     $modelErr = $submissionModel->errors();
-//                     throw new \RuntimeException('Gagal update submission: ' . json_encode([
-//                         'db_error' => $dbErr,
-//                         'model_error' => $modelErr
-//                     ]));
-//                 }
-//                 $submissionId = (int) $submission['id'];
-
-//             } else {
-//                 $submissionId = $submissionModel->insert([
-//                     'template_id'      => $idTemplate,
-//                     'desa_id'          => $desaId,
-//                     'earmarked'        => $earmarked,
-//                     'non_earmarked'    => $nonEarmarked,
-//                     'status_desa'      => 'submitted',
-//                     'status_kecamatan' => 'submitted',
-//                     'status_kabupaten' => 'pending',
-//                 ], true); // true = returnID
-
-//                 if (!$submissionId) {
-//                     $dbErr = $db->error();
-//                     $modelErr = $submissionModel->errors();
-//                     throw new \RuntimeException('Gagal insert submission: ' . json_encode([
-//                         'db_error' => $dbErr,
-//                         'model_error' => $modelErr
-//                     ]));
-//                 }
-//             }
-
-//             // Handle file upload
-// $files = $this->request->getFiles();
-// if (isset($files['files']) && is_array($files['files'])) {
-//     foreach ($files['files'] as $detailId => $file) {
-//         if (empty($file) || !$file->isValid()) {
-//             continue;
-//         }
-//         if ($file->hasMoved()) {
-//             continue;
-//         }
-
-//         // Validasi file
-//         if ($file->getClientMimeType() !== 'application/pdf') {
-//             throw new \RuntimeException('File harus PDF untuk detail_id ' . $detailId);
-//         }
-//         if ($file->getSize() > 1024 * 1024) {
-//             throw new \RuntimeException('Ukuran file maksimal 1MB untuk detail_id ' . $detailId);
-//         }
-
-//         // === Ambil nama kecamatan & desa ===
-//         $desaData = $db->table('desa')
-//             ->select('desa.nama as desa_nama, kecamatan.nama as kec_nama')
-//             ->join('kecamatan', 'kecamatan.id = desa.kecamatan_id')
-//             ->where('desa.id', $desaId)
-//             ->get()
-//             ->getRow();
-
-//         if (!$desaData) {
-//             throw new \RuntimeException("Data desa tidak ditemukan untuk ID {$desaId}");
-//         }
-
-//         $kecamatan = url_title($desaData->kec_nama, '-', true);
-//         $desa      = url_title($desaData->desa_nama, '-', true);
-
-//         $templateData = $db->table('document_templates')
-//         ->select('title')
-//         ->where('id', $idTemplate)
-//         ->get()
-//         ->getRow();
-
-//         // === Ambil nama file dari template detail ===
-//         $detail = $db->table('document_templates_detail')
-//             ->select('nama_file')
-//             ->where('id', $detailId)
-//             ->get()
-//             ->getRow();
-
-//         if (!$detail) {
-//             throw new \RuntimeException("Detail template tidak ditemukan untuk ID {$detailId}");
-//         }
-
-//         $judulFolder = str_replace(' ', '_', $templateData->title);
-
-//         $uploadPath = FCPATH . "uploads/kabupaten/kecamatan/{$kecamatan}/desa/{$desa}/{$judulFolder}/";
-
-//         if (!is_dir($uploadPath)) {
-//             mkdir($uploadPath, 0777, true);
-//         }
-
-//         $fileName = "Desa ".$detail->nama_file . ".pdf";
-
-//         $finalFileName = str_replace(' ', '_', $fileName);
-//         // Pindahkan file
-//         if (!$file->move($uploadPath, $finalFileName, true)) {
-//             throw new \RuntimeException('Gagal memindahkan file: ' . $file->getErrorString());
-//         }
-
-//         // Simpan ke DB
-//         $ok = $fileModel->insert([
-//             'submission_id'      => $submissionId,
-//             'template_detail_id' => (int) $detailId,
-//             'uploader_role'      => 'desa',
-//             'file_path'          => "uploads/kabupaten/kecamatan/{$kecamatan}/desa/{$desa}/{$judulFolder}/".$finalFileName,
-//             'file_name'          => $finalFileName,
-//             'file_size'          => $file->getSize(),
-//             'status_verifikasi'  => 'pending',
-//             'uploaded_at'        => date('Y-m-d H:i:s'),
-//         ]);
-
-//         if ($ok === false) {
-//             $dbErr = $db->error();
-//             $modelErr = $fileModel->errors();
-//             throw new \RuntimeException('Gagal insert file record: ' . json_encode([
-//                 'detail_id' => $detailId,
-//                 'db_error' => $dbErr,
-//                 'model_error' => $modelErr
-//             ]));
-//         }
-//     }
-// }
-//             // Cek status transaksi
-//             if ($db->transStatus() === false) {
-//                 $db->transRollback();
-//                 return $response->setJSON([
-//                     'error'      => 'Transaksi DB gagal',
-//                     'db_error'   => $db->error(),
-//                     'last_query' => (string) $db->getLastQuery()
-//                 ]);
-//             }
-
-//             $db->transCommit();
-//             return $response->setJSON(['success' => true, 'message' => 'Dokumen berhasil disimpan']);
-
-//         } catch (\Throwable $e) {
-//             // Rollback dan kirim detail error
-//             if ($db->transStatus() !== false) {
-//                 $db->transRollback();
-//             }
-//             log_message('error', 'Upload Desa Exception: {msg}', ['msg' => $e->getMessage()]);
-//             return $response->setJSON([
-//                 'error'       => 'Gagal menyimpan data',
-//                 'exception'   => $e->getMessage(),
-//                 'db_error'    => $db->error(),
-//                 'last_query'  => (string) $db->getLastQuery()
-//             ]);
-//         }
-//     }
 
 
 }

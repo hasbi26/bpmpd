@@ -5,6 +5,9 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use Config\Database;
 
+use App\Libraries\LogSubmission;
+
+
 
 class KabupatenController extends BaseController
 {
@@ -152,97 +155,6 @@ class KabupatenController extends BaseController
 
 
 
-    // public function getDataStatusKabupaten(){
-        
-    //     $page    = (int) ($this->request->getGet('page')   ?? 1);
-    //     $length  = (int) ($this->request->getGet('length') ?? 10);
-    //     $search  = trim((string) $this->request->getGet('search'));
-    
-    //     if ($page < 1)   $page = 1;
-    //     if ($length < 1) $length = 10;
-    
-    //     // Ambil desa_id dari session
-    //     $roleId   = session('role_id') ?? null;
-    
-    //     if (!$roleId) {
-    //         return $this->response->setStatusCode(401)->setJSON([
-    //             'recordsTotal'    => 0,
-    //             'recordsFiltered' => 0,
-    //             'data'            => [],
-    //             'message'         => 'Desa tidak teridentifikasi di session.'
-    //         ]);
-    //     }
-    
-    //     $db = \Config\Database::connect();
-    //     $builder = $db->table('document_submissions ds');
-    //     $builder->select('
-    //             ds.id,
-    //             ds.earmarked,
-    //             ds.non_earmarked,
-    //             ds.status_desa,
-    //             ds.status_kecamatan,
-    //             ds.keterangan_kecamatan,
-    //             ds.status_kabupaten,
-    //             ds.created_at,
-    //             dt.title,
-    //             dsa.nama,
-    //             dsa.id as desa_id,
-    //             dt.id as template_id,
-    //             kca.nama as kecamatan
-    //         ')
-    //         ->join('document_templates dt', 'dt.id = ds.template_id')
-    //         ->join('desa dsa', 'dsa.id = ds.desa_id')
-    //         ->join('kecamatan kca', 'kca.id = dsa.kecamatan_id')
-    //         ->where('ds.status_kecamatan', "submitted");
-    
-    //     if (!empty($search)) {
-    //         $builder->groupStart()
-    //                 ->like('dt.title', $search)
-    //                 ->orLike('dsa.nama', $search)
-    //                 ->groupEnd();
-    //     }
-    
-    //     // total setelah filter
-    //     $countBuilder = clone $builder;
-    //     $total = (int) $countBuilder->countAllResults();
-    
-    //     // pagination
-    //     $offset = ($page - 1) * $length;
-    //     $rows = $builder->orderBy('ds.created_at', 'DESC')
-    //                     ->limit($length, $offset)
-    //                     ->get()
-    //                     ->getResultArray();
-    
-    //     // Format hasil agar rapi ke frontend
-    //     $data = [];
-    //     $no = $offset + 1;
-    //     foreach ($rows as $row) {
-    //         $data[] = [
-    //             'id'           => $row['id'],
-    //             'no'           => $no++,
-    //             'tanggal'      => date('d-m-Y H:i', strtotime($row['created_at'])),
-    //             'title'        => $row['title'],
-    //             'desa_id'        => $row['desa_id'],
-    //             'template_id'     => $row['template_id'],
-    //             'nama'        => $row['nama'],
-    //             'kecamatan'        => $row['kecamatan'],
-    //             'earmarked'    => $row['earmarked'] ?? '-',
-    //             'non_earmarked'=> $row['non_earmarked'] ?? '-',
-    //             'status_desa'   => $row['status_desa'], // atau kombinasikan dgn kec/kab
-    //             'status_kecamatan' => $row['status_kecamatan'], // atau kombinasikan dgn kec/kab
-    //             'status_kabupaten' => $row['status_kabupaten'], // atau kombinasikan dgn kec/kab
-    //             'keterangan'   => ($row['keterangan_kecamatan'] == null) ? " " :  $row['keterangan_kecamatan'] == null,
-    //             'detail_url'   => base_url("document/detail/" . $row['id'])
-    //         ];
-    //     }
-    
-    //     return $this->response->setJSON([
-    //         'recordsTotal'    => $total,
-    //         'recordsFiltered' => $total,
-    //         'data'            => $data,
-    //     ]);
-    // }
-
 
     public function KabupatenDetail($id,$idTemplate,$desa)
     {
@@ -386,6 +298,18 @@ class KabupatenController extends BaseController
             }
     
             $db->transCommit();
+
+
+            LogSubmission::save(
+                $submissionId,
+                'kabupaten',
+                session()->get('user_id'),
+                'Verifikasi Dokumen',
+                $statusDesa,
+                '-',
+                $keteranganKecamatan
+            );
+            
             return redirect()->to("{$role}/dashboard")->with('success', 'Verifikasi Berhasil');
 
     
@@ -524,6 +448,57 @@ class KabupatenController extends BaseController
 public function landingPage(){
     return view("kabupaten/landing_page");
 }
-    
+
+public function getRiwayat()
+{
+    $idTemplate = $this->request->getPost('id_template');
+    $desaId     = $this->request->getPost('desa_id');
+
+    $db = \Config\Database::connect();
+
+    $logs = $db->table('document_submission_logs l')
+        ->select([
+            'l.id',
+            'l.created_at',
+            'l.actor_role',
+            'l.action',
+            'l.status_sebelum',
+            'l.status_sesudah',
+            'l.keterangan',
+            'u.username'
+        ])
+        ->join('document_submissions ds', 'ds.id = l.submission_id')
+        ->join('user u', 'u.id = l.actor_id', 'left')
+        ->where('ds.template_id', $idTemplate)
+        ->where('ds.desa_id', $desaId)
+        ->orderBy('l.created_at', 'ASC')
+        ->get()
+        ->getResultArray();
+
+    $result = [];
+
+    $no = 1;
+
+    foreach ($logs as $row) {
+
+        $result[] = [
+            'no' => $no++,
+            'tanggal' => date('d-m-Y H:i:s', strtotime($row['created_at'])),
+            'role' => ucfirst($row['actor_role']),
+            'username' => $row['username'],
+            'action' => $row['action'],
+            'status_sebelum' => $row['status_sebelum'],
+            'status_sesudah' => $row['status_sesudah'],
+            'keterangan' => $row['keterangan']
+        ];
+    }
+
+    return $this->response->setJSON([
+        'success' => true,
+        'data' => $result
+    ]);
+}
+
+
 
 }
