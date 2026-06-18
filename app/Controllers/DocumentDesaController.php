@@ -442,7 +442,7 @@ public function upload_files()
             'desa',
             session()->get('user_id'),
             'Upload Dokumen',
-            null,
+            'submitted',
             '-',
             'Desa mengunggah dokumen'
         );

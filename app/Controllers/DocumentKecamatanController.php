@@ -129,8 +129,12 @@ class DocumentKecamatanController extends Controller
         // Mulai transaksi (manual biar bisa commit/rollback + error detail)
         $db->transBegin();
 
+        $cekDocument = 'Verifikasi Dokumen';
+        
+
         if($statusDesa == "approved"){
             $status_kecamatan ="submitted";
+            $cekDocument = 'Upload Dokumen';
         } if ($statusDesa == "rejected"){
             $status_kecamatan ="pending";
         }
@@ -188,6 +192,10 @@ class DocumentKecamatanController extends Controller
     
             // Handle file upload
             $files = $this->request->getFiles();
+
+
+
+
             if (isset($files['files']) && is_array($files['files'])) {
                 foreach ($files['files'] as $detailId => $file) {
                     if (empty($file) || !$file->isValid()) {
@@ -335,9 +343,9 @@ class DocumentKecamatanController extends Controller
                 $submissionId,
                 'kecamatan',
                 session()->get('user_id'),
-                'Verifikasi Dokumen',
+                $cekDocument,
                 $statusDesa,
-                '-',
+                $status_kecamatan,
                 $keteranganKecamatan
             );
 

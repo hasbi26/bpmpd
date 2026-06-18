@@ -54,6 +54,7 @@
         <form action="<?= base_url('templates/kabupaten/upload_files') ?>" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="id_template" id="id_template">
             <input type="hidden" name="desa_id" id="desa_id">
+            <input type="hidden" name="status_desa" id="status_desa">
             <div class="modal-content">
                 <div class="modal-header d-flex justify-content-between align-items-center">
                     <h5 class="modal-title m-0"> <span id="uploadKecamatanTitle"></span> <span id="desaTitle"></span>

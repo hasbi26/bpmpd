@@ -698,7 +698,10 @@
             contentType: false,
             success: function(res) {
                 if (res.error) {
-                    alert(res.error);
+                    alert(
+                        res.error +
+                        "\n\nException: " + (res.exception || "-")
+                    );
                 } else {
                     alert(res.message);
                     $("#modalUploadDesa").modal("hide");

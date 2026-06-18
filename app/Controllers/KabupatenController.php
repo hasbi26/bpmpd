@@ -230,8 +230,10 @@ class KabupatenController extends BaseController
     
         $idTemplate   = (int) $request->getPost('id_template');
         $desaId   = (int) $request->getPost('desa_id');
-        $statusDesa = $request->getPost('status_kecamatan');
+        $statusDesa = $request->getPost('status_desa');
+        $statusKecamatan = $request->getPost('status_kecamatan');
         $keteranganKecamatan = $request->getPost('keterangan');
+
        
         // Validasi minimal
         if (!$idTemplate) {
@@ -252,8 +254,8 @@ class KabupatenController extends BaseController
     
             if ($submission) {
                 $ok = $submissionModel->update($submission['id'], [
-                    'status_kecamatan'     => $statusDesa,
-                    'status_kabupaten'     => $statusDesa,
+                    'status_kecamatan'     => $statusKecamatan,
+                    'status_kabupaten'     => $statusKecamatan,
                     'keterangan_kecamatan'     => $keteranganKecamatan,
                     'updated_at'      => date('Y-m-d H:i:s')
                 ]);
@@ -271,8 +273,8 @@ class KabupatenController extends BaseController
                 $submissionId = $submissionModel->insert([
                     'template_id'      => $idTemplate,
                     'desa_id'          => $desaId,
-                    'status_kecamatan' => $statusDesa,
-                    'status_kabupaten' => $statusDesa,
+                    'status_kecamatan' => $statusKecamatan,
+                    'status_kabupaten' => $statusKecamatan,
                 ], true); // true = returnID
     
                 if (!$submissionId) {
@@ -306,7 +308,7 @@ class KabupatenController extends BaseController
                 session()->get('user_id'),
                 'Verifikasi Dokumen',
                 $statusDesa,
-                '-',
+                $statusKecamatan,
                 $keteranganKecamatan
             );
             

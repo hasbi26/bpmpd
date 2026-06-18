@@ -649,6 +649,7 @@
                         $("#desa_id").val(desa);
                         $("#earmarked").val(formatRupiahModal(res.submission.earmarked));
                         $("#non_earmarked").val(formatRupiahModal(res.submission.non_earmarked));
+                        $("#status_desa").val(res.submission.status_desa);
                         $("#status_kecamatan").val(res.submission.status_kabupaten);
                         $("#keterangan").val(res.submission.keterangan_kecamatan);
 
@@ -773,7 +774,8 @@
                             <th>Tanggal</th>
                             <th>Role</th>
                             <th>Aksi</th>
-                            <th>Status</th>
+                            <th>Status Desa</th>
+                            <th>Status Kecamatan</th>
                             <th>Keterangan</th>
                         </tr>
                     </thead>
@@ -788,7 +790,26 @@
                             badgeClass = "bg-success";
                         } else if (item.status_sebelum === "rejected") {
                             badgeClass = "bg-danger";
+                        } else if (item.status_sebelum === "submitted") {
+                            badgeClass = "bg-info";
+                        } else if (item.status_sebelum === "pending") {
+                            badgeClass = "bg-warning";
                         }
+
+                        let badgeClassKec = "bg-secondary";
+
+                        if (item.status_sesudah === "approved") {
+                            badgeClassKec = "bg-success";
+                        } else if (item.status_sesudah === "rejected") {
+                            badgeClassKec = "bg-danger";
+                        } else if (item.status_sesudah === "submitted") {
+                            badgeClassKec = "bg-info";
+                        } else if (item.status_sesudah === "pending") {
+                            badgeClassKec = "bg-warning";
+                        }
+
+
+
 
                         html += `
     <tr>
@@ -801,6 +822,13 @@
                 ${item.status_sebelum ?? '-'}
             </span>
         </td>
+
+        <td>
+            <span class="badge ${badgeClassKec}">
+                ${item.status_sesudah ?? '-'}
+            </span>
+        </td>
+
         <td>${item.keterangan ?? '-'}</td>
     </tr>
 `;
