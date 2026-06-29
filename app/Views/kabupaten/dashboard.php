@@ -737,6 +737,137 @@
 
 
 
+    $(document).on("click", "#btnLogRiwayatStatus", function() {
+
+        $.ajax({
+            url: "<?= base_url('templates/kabupaten/get-riwayat') ?>",
+            type: "POST",
+            dataType: "json",
+            data: {
+                id_template: $("#id_template").val(),
+                desa_id: $("#desa_id").val()
+            },
+            beforeSend: function() {
+                $("#riwayatBodyStatus").html("Loading...");
+            },
+            success: function(res) {
+
+                console.log(res);
+
+                let html = '';
+
+                if (!res.data || res.data.length === 0) {
+
+                    html = `
+        <div class="alert alert-warning mb-0">
+            Belum ada riwayat.
+        </div>
+    `;
+
+                } else {
+
+                    html = `
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Role</th>
+                    <th>Aksi</th>
+                    <th>Status Desa</th>
+                    <th>Status Kecamatan</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+                    res.data.forEach(function(item) {
+
+                        let badgeClass = "bg-secondary";
+
+                        if (item.status_sebelum === "approved") {
+                            badgeClass = "bg-success";
+                        } else if (item.status_sebelum === "rejected") {
+                            badgeClass = "bg-danger";
+                        } else if (item.status_sebelum === "submitted") {
+                            badgeClass = "bg-info";
+                        } else if (item.status_sebelum === "pending") {
+                            badgeClass = "bg-warning";
+                        }
+
+                        let badgeClassKec = "bg-secondary";
+
+                        if (item.status_sesudah === "approved") {
+                            badgeClassKec = "bg-success";
+                        } else if (item.status_sesudah === "rejected") {
+                            badgeClassKec = "bg-danger";
+                        } else if (item.status_sesudah === "submitted") {
+                            badgeClassKec = "bg-info";
+                        } else if (item.status_sesudah === "pending") {
+                            badgeClassKec = "bg-warning";
+                        }
+
+
+
+
+                        html += `
+<tr>
+<td>${item.no}</td>
+<td>${item.tanggal}</td>
+<td>${item.role}</td>
+<td>${item.action}</td>
+<td>
+    <span class="badge ${badgeClass}">
+        ${item.status_sebelum ?? '-'}
+    </span>
+</td>
+
+<td>
+    <span class="badge ${badgeClassKec}">
+        ${item.status_sesudah ?? '-'}
+    </span>
+</td>
+
+<td>${item.keterangan ?? '-'}</td>
+</tr>
+`;
+                    });
+
+                    html += `
+            </tbody>
+        </table>
+    `;
+                }
+
+                $("#riwayatBodyStatus").html(html);
+
+                const modalRiwayatStatus = new bootstrap.Modal(
+                    document.getElementById('modalRiwayatStatus')
+                );
+
+                modalRiwayatStatus.show();
+            },
+            error: function(xhr) {
+
+                console.log(xhr.responseText);
+
+                $("#riwayatBodyStatus").html(`
+    <div class="alert alert-danger mb-0">
+        Gagal mengambil data riwayat.
+    </div>
+`);
+            }
+        });
+
+    });
+
+
+
+
+
+
+
     $(document).on("click", "#btnLogRiwayat", function() {
 
         $.ajax({

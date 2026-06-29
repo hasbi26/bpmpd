@@ -196,6 +196,14 @@ class Database extends Config
         // Ensure that we always set the database group to 'tests' if
         // we are currently running an automated test suite, so that
         // we don't overwrite live data on accident.
+
+        // Kita isi properti 'encrypt' secara dinamis di sini setelah objek dibuat
+        if (env('database.default.encrypt.ssl_ca')) {
+            $this->default['encrypt'] = [
+                'ssl_ca' => ROOTPATH . env('database.default.encrypt.ssl_ca'),
+            ];
+        }
+
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
         }

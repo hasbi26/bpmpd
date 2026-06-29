@@ -53,6 +53,7 @@
     <div class="modal-dialog modal-lg">
         <form action="<?= base_url('templates/reverifikasi-kabupaten') ?>" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="id_template" id="id_template">
+            <input type="hidden" name="desa_id" id="desa_id">
             <input type="hidden" name="id_submission" id="id_submission">
             <div class="modal-content">
                 <div class="modal-header d-flex justify-content-between align-items-center">
@@ -99,11 +100,32 @@
 
                     </div>
                     <div class="modal-footer">
+                        <button type="button" id="btnLogRiwayatStatus" class="btn btn-info me-auto">
+                            Log Riwayat
+                        </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                         <button type="submit" class="btn btn-success">submit</button>
 
                     </div>
                 </div>
         </form>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalRiwayatStatus" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Log Riwayat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="riwayatBodyStatus">
+                Loading...
+            </div>
+
+        </div>
     </div>
 </div>

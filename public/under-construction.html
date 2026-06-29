@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Under Construction</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #ffffff;
+            /* Background putih */
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #ffffff;
+            /* Background putih untuk container */
+        }
+
+        .bg {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* Gambar full tanpa terpotong */
+            display: block;
+        }
+
+        /* Media query untuk layar kecil (mobile) */
+        @media (max-width: 768px) {
+            .bg {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+        }
+
+        /* Media query untuk layar sangat kecil */
+        @media (max-width: 480px) {
+            .bg {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <img src="assets/adminlte/img/background-under-construction-download.png" class="bg"
+            alt="Website Under Construction">
+    </div>
+
+</body>
+
+</html>
