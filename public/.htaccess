@@ -18,16 +18,19 @@ Options -Indexes
     # Masukkan IP lokal Anda jika ingin mengecualikan diri sendiri (opsional)
     # Untuk localhost / XAMPP, IP Anda biasanya 127.0.0.1 atau ::1
     # Jika ingin mencoba tampilannya langsung, Anda bisa memberikan tanda pagar (#) di depan baris di bawah ini:
-    RewriteCond %{REMOTE_ADDR} !^127\.0\.0\.1$
-    RewriteCond %{REMOTE_ADDR} !^::1$
+    # Cek environment CI_ENVIRONMENT dari .env
+    # Jika ENVIRONMENT = development, maka tidak redirect
+    SetEnv CI_ENVIRONMENT production
+
+    #RewriteCond %{ENV:CI_ENVIRONMENT} !=development
 
     # Jangan alihkan jika mengakses file under-construction.html, aset CSS, atau Gambar pendukung
-    RewriteCond %{REQUEST_URI} !/under-construction\.html$ [NC]
+    #RewriteCond %{REQUEST_URI} !/under-construction\.html$ [NC]
     # Baris di bawah ini opsional, agar gambar/css di halaman maintenance tidak ikut terblokir
-    RewriteCond %{REQUEST_URI} !\.(jmp|ico|gif|jpg|jpeg|png|css|js)$ [NC]
+    #RewriteCond %{REQUEST_URI} !\.(jmp|ico|gif|jpg|jpeg|png|css|js)$ [NC]
 
     # Alihkan semua request ke file maintenance
-    RewriteRule ^(.*)$ /under-construction.html [R=302,L]
+    #RewriteRule ^(.*)$ /under-construction.html [R=302,L]
 
     # ==================================================================
     # MODE UNDER CONSTRUCTION (SELESAI)
