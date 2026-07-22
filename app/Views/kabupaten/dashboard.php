@@ -430,6 +430,7 @@
                   <td>${item.title}</td>
                   <td>${item.nama}</td>
                   <td>${item.kecamatan}</td>
+                  <td>${item.earmarked}</td>
                   <td><span class="badge ${statusClass}">${statusText}</span></td>
                   <td><button class="btn btn-sm btn-success btnStatusDetailDesa" data-desa="${item.desa_id}" data-template="${item.template_id}" data-id="${item.id}">Detail</button></td>
               </tr>

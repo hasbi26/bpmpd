@@ -5,6 +5,11 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use Config\Database;
 
+use App\Models\DocumentSubmissionsModel;
+use App\Models\DesaModel;
+use App\Models\KecamatanModel;
+
+
 use App\Libraries\LogSubmission;
 
 
@@ -448,7 +453,86 @@ class KabupatenController extends BaseController
   }
 
 public function landingPage(){
-    return view("kabupaten/landing_page");
+    
+    $desaModel      = new DesaModel();
+    $kecamatanModel = new KecamatanModel();
+    $docModel       = new DocumentSubmissionsModel();
+
+    $totalDesa      = $desaModel->countAllResults();
+    $totalKecamatan = $kecamatanModel->countAllResults();
+
+    $templateId = 1; 
+
+        $summaryNominal = $docModel
+            ->select('
+                SUM(earmarked) as total_earmarked,
+                SUM(non_earmarked) as total_non_earmarked
+            ')
+            ->where('status_kabupaten', 'approved')
+            ->first();
+
+
+            $summaryStatus = $docModel
+            ->select("
+                COUNT(CASE WHEN status_kabupaten = 'approved' THEN 1 END) AS total_approved,
+                COUNT(CASE WHEN status_kabupaten = 'rejected' THEN 1 END) AS total_rejected,
+                COUNT(CASE WHEN status_kabupaten = 'submitted' THEN 1 END) AS total_submitted,
+                COUNT(CASE WHEN status_kabupaten = 'pending' THEN 1 END) AS total_pending
+            ")
+            ->first();
+
+            $approved  = (int) ($summaryStatus['total_approved'] ?? 0);
+            $rejected  = (int) ($summaryStatus['total_rejected'] ?? 0);
+            $submitted = (int) ($summaryStatus['total_submitted'] ?? 0);
+            $pending   = (int) ($summaryStatus['total_pending'] ?? 0);
+            
+            $totalDokumen = $approved + $rejected + $submitted + $pending;
+
+
+            $chartData = $docModel
+                ->select("
+                    MONTH(created_at) as bulan,
+                    SUM(earmarked) as total_earmarked,
+                    SUM(non_earmarked) as total_non_earmarked
+                ")
+                ->where("YEAR(created_at)", 2026)
+                ->groupBy("MONTH(created_at)")
+                ->findAll();
+
+            // Inisialisasi array 12 bulan (default nilai 0)
+            $earmarkedMonthly    = array_fill(0, 12, 0);
+            $nonEarmarkedMonthly = array_fill(0, 12, 0);
+
+            // Petakan hasil query ke bulan masing-masing (1 = Jan, 12 = Des)
+            foreach ($chartData as $row) {
+                $monthIndex = (int)$row['bulan'] - 1; // Array index 0 - 11
+                $earmarkedMonthly[$monthIndex]    = (float) $row['total_earmarked'];
+                $nonEarmarkedMonthly[$monthIndex] = (float) $row['total_non_earmarked'];
+            }
+
+
+        $data = [
+            'totalDesa'         => $totalDesa,
+            'totalKecamatan'    => $totalKecamatan,
+            'totalEarmarked'    => $summaryNominal['total_earmarked'] ?? 0,
+            'totalNonEarmarked' => $summaryNominal['total_non_earmarked'] ?? 0,
+            'approved'          => $approved,  // Jumlah status approved
+            'rejected'          => $rejected,  // Jumlah status rejected
+            'submitted'         => $submitted, // Jumlah status submitted
+            'pending'           => $pending,   // Jumlah status pending
+            'totalDokumen'      => $totalDokumen,
+            'earmarkedChart'    => json_encode($earmarkedMonthly),
+            'nonEarmarkedChart' => json_encode($nonEarmarkedMonthly),
+        ];
+
+
+
+
+        // var_dump($data);
+        // die;
+
+
+    return view("kabupaten/landing_page",$data);
 }
 
 public function getRiwayat()

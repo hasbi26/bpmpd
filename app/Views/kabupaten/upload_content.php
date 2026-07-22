@@ -29,6 +29,7 @@
                 <th class="sortable" data-sort="dt.title">Nama Document</th>
                 <th class="sortable" data-sort="dsa.nama">Desa</th>
                 <th class="sortable" data-sort="kca.nama">Kecamatan</th>
+                <th class="sortable" data-sort="ds.earmarked">Reguler</th>
                 <th class="sortable" data-sort="ds.status_kecamatan">Status</th>
                 <th>Detail</th>
             </tr>
