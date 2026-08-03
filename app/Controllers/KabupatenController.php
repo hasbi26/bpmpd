@@ -458,7 +458,22 @@ public function landingPage(){
     $kecamatanModel = new KecamatanModel();
     $docModel       = new DocumentSubmissionsModel();
 
-    $totalDesa      = $desaModel->countAllResults();
+    // $totalDesa      = $desaModel->countAllResults();
+
+    // Mengambil total desa dan total kelurahan dalam 1 query
+        $totals = $desaModel
+        ->select("
+            SUM(CASE WHEN display_name = 'Desa' THEN 1 ELSE 0 END) as total_desa,
+            SUM(CASE WHEN display_name = 'Kelurahan' THEN 1 ELSE 0 END) as total_kelurahan
+        ")
+        ->first();
+
+        // Cara mengakses nilainya:
+        $totalDesa      = (int) ($totals['total_desa'] ?? 0);
+        $totalKelurahan = (int) ($totals['total_kelurahan'] ?? 0);
+
+
+
     $totalKecamatan = $kecamatanModel->countAllResults();
 
     $templateId = 1; 
@@ -513,6 +528,7 @@ public function landingPage(){
 
         $data = [
             'totalDesa'         => $totalDesa,
+            'totalKelurahan'    => $totalKelurahan,
             'totalKecamatan'    => $totalKecamatan,
             'totalEarmarked'    => $summaryNominal['total_earmarked'] ?? 0,
             'totalNonEarmarked' => $summaryNominal['total_non_earmarked'] ?? 0,

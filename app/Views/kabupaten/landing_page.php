@@ -141,10 +141,13 @@
                                     <i class="bi bi-bank2"></i>
                                 </span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Total Desa</span>
-                                    <span class="info-box-number">
-                                        <!-- 270 -->
-                                        <?= number_format($totalDesa, 0, ',', '.'); ?>
+                                    <span class="info-box-text">Total Desa :
+                                        <span style="font-weight: bold;">
+                                            <?= number_format($totalDesa, 0, ',', '.'); ?></span>
+                                    </span>
+                                    <span class="info-box-text">Total Kelurahan :
+                                        <span style="font-weight: bold;">
+                                            <?= number_format($totalKelurahan, 0, ',', '.'); ?></span>
                                     </span>
                                 </div>
                                 <!-- /.info-box-content -->
