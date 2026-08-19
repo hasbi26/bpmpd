@@ -36,7 +36,7 @@ class ContentController extends BaseController
             }
     
             // Daftar konten yang valid
-            $validContents = ['status', 'upload', 'settings','profil'];
+            $validContents = ['status', 'upload', 'settings', 'profil', 'kendaraan', 'kiba', 'peralatan', 'kibc'];
             if (!in_array($type, $validContents)) {
                 throw new \CodeIgniter\Exceptions\PageNotFoundException('Tipe konten tidak valid');
             }

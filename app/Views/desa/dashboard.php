@@ -119,6 +119,67 @@
                                 <p>Document Upload</p>
                             </a>
                         </li>
+
+
+                        <li class="nav-item has-treeview">
+                            <a href="#" class="nav-link" data-content="aset" id="aset-desa">
+                                <i class="nav-icon bi bi-clipboard-fill"></i>
+                                <p>
+                                    Aset Desa
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+
+                            <ul class="nav nav-treeview">
+
+                                <!-- KIB A -->
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link" data-content="kiba" id="kiba">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>KIB A</p>
+                                    </a>
+                                </li>
+
+                                <!-- KIB B -->
+                                <li class="nav-item has-treeview">
+                                    <a href="#" class="nav-link" data-content="kibb" id="kibb">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>
+                                            KIB B
+                                            <i class="nav-arrow bi bi-chevron-right"></i>
+                                        </p>
+                                    </a>
+
+                                    <ul class="nav nav-treeview">
+
+                                        <li class="nav-item">
+                                            <a href="#" class="nav-link" data-content="kendaraan" id="kendaraan">
+                                                <i class="nav-icon bi bi-circle"></i>
+                                                <p>Kendaraan</p>
+                                            </a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a href="#" class="nav-link" data-content="peralatan" id="peralatan">
+                                                <i class="nav-icon bi bi-circle"></i>
+                                                <p>Peralatan dan Mesin</p>
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </li>
+
+                                <!-- KIB C -->
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link" data-content="kibc" id="kibc">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>KIB C</p>
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+
                         <li class="nav-item">
                             <a href="#" class="nav-link" data-content="profil" id="menu-profil">
                                 <i class="nav-icon bi bi-person-circle"></i>
@@ -339,21 +400,40 @@
         function setActiveMenu(menuId) {
             document.querySelectorAll('.sidebar-menu a.nav-link').forEach(link => {
                 link.classList.remove('active');
-                link.parentElement.classList.remove('menu-open');
+            });
+
+            document.querySelectorAll('.sidebar-menu .nav-item').forEach(item => {
+                item.classList.remove('menu-open');
             });
 
             const activeLink = document.getElementById(menuId);
+
             if (activeLink) {
                 activeLink.classList.add('active');
-                activeLink.parentElement.classList.add('menu-open');
+
+                const parentTree = activeLink.closest('.has-treeview');
+
+                if (parentTree) {
+                    parentTree.classList.add('menu-open');
+                }
+
                 currentActiveMenu = menuId;
                 localStorage.setItem('activeMenu', menuId);
             }
         }
 
+
+
         // Attach click handlers
         document.querySelectorAll('.sidebar-menu a.nav-link').forEach(link => {
             link.addEventListener('click', function(e) {
+
+                // Hanya parent TreeView yang dilewatkan ke AdminLTE
+                if (this.closest('.has-treeview') === this.parentElement) {
+                    return;
+                }
+
+
                 e.preventDefault();
                 const menuId = this.id;
                 const contentType = this.dataset.content;
