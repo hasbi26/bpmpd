@@ -9,6 +9,19 @@ use CodeIgniter\Router\RouteCollection;
  $routes->get('/dashboard', 'KabupatenController::landingPage');
 
 
+ $routes->get('aset-tanah', 'AsetTanah::index');
+$routes->post('aset-tanah/import', 'AsetTanah::import');
+
+$routes->get('aset-tanah/export/excel', 'AsetTanah::exportExcel');
+$routes->get('aset-tanah/export/pdf', 'AsetTanah::exportPdf');
+
+
+
+//  $routes->group('aset-tanah', function ($routes) {
+//     $routes->get('/', 'AsetTanah::index');
+//     $routes->post('import', 'AsetTanah::import');
+// });
+
 $routes->get('/', 'AuthController::loginpage');
 $routes->get('/admin', 'SuperAdminController::login');
 $routes->get('/auth/logoutadmin', 'SuperAdminController::logout');
@@ -89,6 +102,7 @@ $routes->get('document-desa/getStatus', 'DesaController::getDataStatus');
 $routes->get('document-kecamatan/getData', 'KecamatanController::getDataKecamatan');
 
 $routes->post('templates/kabupaten/get-riwayat', 'KabupatenController::getRiwayat');
+
 
 
 
