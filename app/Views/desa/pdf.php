@@ -147,7 +147,9 @@
                     <?= $row['nilai_perolehan'] !== null ? number_format((float) $row['nilai_perolehan'], 0, ',', '.') : '-' ?>
                 </td>
                 <td><?= esc($row['keterangan'] ?? '-') ?></td>
-                <td class="center"><?= esc($row['tanggal_rekap'] ?? '-') ?></td>
+                <td class="center">
+                    <?= $row['tanggal_rekap'] ? esc(date('d-m-Y', strtotime($row['tanggal_rekap']))) : '-' ?></td>
+
             </tr>
             <?php endforeach; ?>
             <?php endif; ?>

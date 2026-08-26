@@ -253,6 +253,9 @@ class AsetTanah extends BaseController
 
         $r = 2;
         foreach ($rows as $row) {
+            $tanggalRekapFormatted = $row['tanggal_rekap']
+            ? date('d-m-Y', strtotime($row['tanggal_rekap']))
+            : null;
             $sheet->fromArray([
                 $row['kode_barang'],
                 $row['nup'],
@@ -262,7 +265,7 @@ class AsetTanah extends BaseController
                 $row['alas_hak'],
                 $row['nilai_perolehan'],
                 $row['keterangan'],
-                $row['tanggal_rekap'],
+                $tanggalRekapFormatted,
                 $row['foto'],
             ], null, "A{$r}");
             $r++;
