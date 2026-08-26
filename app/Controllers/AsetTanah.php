@@ -27,10 +27,24 @@ class AsetTanah extends BaseController
 
     public function index()
     {
+
+        $desa = $this->getDesaContext();
+
+        if (!$desa) {
+            return redirect()->back()
+                ->with('error', 'Sesi desa tidak ditemukan. Silakan login ulang.');
+        }
+    
+        $rows = $this->model->getByDesa((int) $desa['id']);
+
+
+
+
         $data = [
             'title' => 'Import Data Aset Tanah',
             'role' =>  session()->get('role_id'),
-            'namaWilayah' => session()->get('wilayah_nama')
+            'namaWilayah' => session()->get('wilayah_nama'),
+            'rows'        => $rows
         ];
 
         return view('desa/kiba_content', $data);
@@ -300,10 +314,19 @@ class AsetTanah extends BaseController
 
         $rows = $this->model->getByDesa((int) $desa['id']);
 
+        $totalLuas  = 0;
+        $totalNilai = 0;
+        foreach ($rows as $row) {
+            $totalLuas  += (float) ($row['luas'] ?? 0);
+            $totalNilai += (float) ($row['nilai_perolehan'] ?? 0);
+        }
+
         $html = view('desa/pdf', [
             'desa'   => $desa,
             'rows'   => $rows,
             'tanggal_cetak' => date('d-m-Y'),
+            'total_luas'    => $totalLuas,
+            'total_nilai'   => $totalNilai,
         ]);
 
         $options = new DompdfOptions();

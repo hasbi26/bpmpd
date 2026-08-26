@@ -98,5 +98,88 @@
 
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-12">
+
+                <div class="card card-outline card-secondary mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-table me-1"></i> Data Aset Tanah Saat Ini
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Kode Barang</th>
+                                        <th>NUP</th>
+                                        <th>Jenis Tanah</th>
+                                        <th class="text-end">Luas (m&sup2;)</th>
+                                        <th>Tahun Perolehan</th>
+                                        <th>Alas Hak</th>
+                                        <th class="text-end">Nilai Perolehan (Rp)</th>
+                                        <th>Keterangan</th>
+                                        <th>Tanggal Rekap</th>
+                                        <th>Foto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($rows)): ?>
+                                    <tr>
+                                        <td colspan="11" class="text-center text-muted py-3">
+                                            Belum ada data aset tanah yang diupload.
+                                        </td>
+                                    </tr>
+                                    <?php else: ?>
+                                    <?php $totalLuas = 0; $totalNilai = 0; ?>
+                                    <?php foreach ($rows as $i => $row): ?>
+                                    <?php
+                                                $totalLuas  += (float) ($row['luas'] ?? 0);
+                                                $totalNilai += (float) ($row['nilai_perolehan'] ?? 0);
+                                            ?>
+                                    <tr>
+                                        <td><?= $i + 1 ?></td>
+                                        <td><?= esc($row['kode_barang'] ?? '-') ?></td>
+                                        <td><?= esc($row['nup'] ?? '-') ?></td>
+                                        <td><?= esc($row['nama_barang']) ?></td>
+                                        <td class="text-end">
+                                            <?= $row['luas'] !== null ? number_format((float) $row['luas'], 2, ',', '.') : '-' ?>
+                                        </td>
+                                        <td><?= esc($row['tahun_perolehan'] ?? '-') ?></td>
+                                        <td><?= esc($row['alas_hak'] ?? '-') ?></td>
+                                        <td class="text-end">
+                                            <?= $row['nilai_perolehan'] !== null ? number_format((float) $row['nilai_perolehan'], 0, ',', '.') : '-' ?>
+                                        </td>
+                                        <td><?= esc($row['keterangan'] ?? '-') ?></td>
+                                        <td><?= $row['tanggal_rekap'] ? esc(date('d-m-Y', strtotime($row['tanggal_rekap']))) : '-' ?>
+                                        </td>
+                                        <td>
+                                            <?php if (!empty($row['foto'])): ?>
+                                            <a href="<?= esc($row['foto']) ?>" target="_blank" rel="noopener">Lihat</a>
+                                            <?php else: ?>
+                                            -
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                    <tr class="fw-bold table-light">
+                                        <td colspan="4" class="text-end">Total</td>
+                                        <td class="text-end"><?= number_format($totalLuas, 2, ',', '.') ?></td>
+                                        <td colspan="2"></td>
+                                        <td class="text-end"><?= number_format($totalNilai, 0, ',', '.') ?></td>
+                                        <td colspan="3"></td>
+                                    </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
 </div>

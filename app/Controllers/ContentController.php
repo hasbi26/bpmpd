@@ -3,6 +3,7 @@ namespace App\Controllers;
 use App\Models\DocumentTemplatesDesaModel;
 use App\Models\DocumentTemplatesKecamatanModel;
 use App\Models\DesaModel;
+use App\Models\AsetTanahModel;
 
 class ContentController extends BaseController
 {
@@ -73,6 +74,21 @@ class ContentController extends BaseController
             
                 $profilDesa = $desaModel->getAllProfilDesa($search, $length, $page);
             } 
+
+
+
+            $rows = [];
+
+            if ($role === 'desa' && $type === 'kiba') {
+                $asetTanahModel = new \App\Models\AsetTanahModel();
+                $rows = $asetTanahModel->getByDesa((int) $idprofil);
+            }
+
+
+            // var_dump($rows, $role, $type);
+            // die;
+
+            
             
             return view($viewPath, [
                 'role'        => $role,
@@ -82,6 +98,7 @@ class ContentController extends BaseController
                 'idprofil'    => $idprofil,
                 'profilDesa' =>  $profilDesa,
                 'search'    =>  $search,
+                'rows' => $rows
             ]);
             
         

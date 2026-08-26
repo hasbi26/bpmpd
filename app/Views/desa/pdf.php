@@ -102,13 +102,20 @@
         <tr>
             <td><strong>Desa</strong></td>
             <td>: <?= esc($desa['nama']) ?></td>
-            <td style="width: 40px;"></td>
+            <td style="width: 30px;"></td>
             <td><strong>Tanggal Cetak</strong></td>
             <td>: <?= esc($tanggal_cetak) ?></td>
         </tr>
         <tr>
             <td><strong>Jumlah Aset</strong></td>
             <td>: <?= count($rows) ?> item</td>
+            <td style="width: 30px;"></td>
+            <td><strong>Total Luas</strong></td>
+            <td>: <?= number_format($total_luas, 2, ',', '.') ?> m&sup2;</td>
+        </tr>
+        <tr>
+            <td><strong>Total Nilai Perolehan</strong></td>
+            <td>: Rp <?= number_format($total_nilai, 0, ',', '.') ?></td>
         </tr>
     </table>
 
