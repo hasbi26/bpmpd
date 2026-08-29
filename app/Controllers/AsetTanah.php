@@ -343,4 +343,186 @@ class AsetTanah extends BaseController
         $dompdf->stream($filename, ['Attachment' => false]); // false = tampil di tab browser dulu, bukan langsung download
         exit;
     }
+
+
+    private function getKecamatanContext(): ?array
+    {
+        $kecamatanId = session()->get('role_id');
+        if (empty($kecamatanId) || session()->get('role') !== 'kecamatan') {
+            return null;
+        }
+ 
+        $kecamatan = \Config\Database::connect()
+            ->table('kecamatan')
+            ->select('id, nama')
+            ->where('id', $kecamatanId)
+            ->get()
+            ->getRowArray();
+ 
+        return $kecamatan ?: null;
+    }
+
+
+    public function kecamatanIndex()
+    {
+        $kecamatan = $this->getKecamatanContext();
+        if (!$kecamatan) {
+            return redirect()->back()->with('error', 'Sesi kecamatan tidak ditemukan. Silakan login ulang.');
+        }
+ 
+        $desaIdRaw = $this->request->getGet('desa_id');
+        $desaId    = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+ 
+        $rows = $this->model->getByKecamatan((int) $kecamatan['id'], $desaId);
+ 
+        $desaList = \Config\Database::connect()
+            ->table('desa')
+            ->select('id, nama')
+            ->where('kecamatan_id', $kecamatan['id'])
+            ->orderBy('nama', 'ASC')
+            ->get()
+            ->getResultArray();
+ 
+        return view('kecamatan/kiba_content', [
+            'rows'           => $rows,
+            'desaList'       => $desaList,
+            'selectedDesaId' => $desaId,
+            'role'           => 'kecamatan',
+            'namaWilayah'    => $kecamatan['nama'],
+        ]);
+    }
+
+
+
+    public function kecamatanExportPdf()
+    {
+        $kecamatan = $this->getKecamatanContext();
+        if (!$kecamatan) {
+            return redirect()->back()->with('error', 'Sesi kecamatan tidak ditemukan. Silakan login ulang.');
+        }
+ 
+        $desaIdRaw = $this->request->getGet('desa_id');
+        $desaId    = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+ 
+        $rows = $this->model->getByKecamatan((int) $kecamatan['id'], $desaId);
+ 
+        $totalLuas  = 0;
+        $totalNilai = 0;
+        foreach ($rows as $row) {
+            $totalLuas  += (float) ($row['luas'] ?? 0);
+            $totalNilai += (float) ($row['nilai_perolehan'] ?? 0);
+        }
+ 
+        // Kalau filter desa aktif, judul laporan pakai nama desa itu;
+        // kalau tidak (tampilkan semua desa), pakai nama kecamatan.
+        $namaFilterDesa = null;
+        if ($desaId && !empty($rows)) {
+            $namaFilterDesa = $rows[0]['nama_desa'] ?? null;
+        }
+ 
+        $html = view('kecamatan/pdf_kecamatan', [
+            'kecamatan'      => $kecamatan,
+            'namaFilterDesa' => $namaFilterDesa,
+            'rows'           => $rows,
+            'tanggal_cetak'  => date('d-m-Y'),
+            'total_luas'     => $totalLuas,
+            'total_nilai'    => $totalNilai,
+        ]);
+ 
+        $options = new DompdfOptions();
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Helvetica');
+ 
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('F4', 'landscape');
+        $dompdf->render();
+ 
+        $filenamePart = $namaFilterDesa ?: $kecamatan['nama'];
+        $filename = 'aset_tanah_' . preg_replace('/\s+/', '_', strtolower($filenamePart)) . '_' . date('Ymd_His') . '.pdf';
+ 
+        $dompdf->stream($filename, ['Attachment' => false]);
+        exit;
+    }
+
+    private function getKabupatenContext(): ?array
+    {
+        $kabupatenId = session()->get('role_id');
+        if (empty($kabupatenId) || session()->get('role') !== 'kabupaten') {
+            return null;
+        }
+
+        $kabupaten = \Config\Database::connect()
+            ->table('kabupaten')
+            ->select('id, nama')
+            ->where('id', $kabupatenId)
+            ->get()
+            ->getRowArray();
+
+        return $kabupaten ?: null;
+    }
+
+    /**
+     * Download PDF data aset tanah untuk KABUPATEN, mengikuti filter
+     * kecamatan_id dan/atau desa_id yang sama seperti tabel di halaman
+     * kabupaten (dirender lewat ContentController::loadContent).
+     */
+    public function kabupatenExportPdf()
+    {
+        $kabupaten = $this->getKabupatenContext();
+        if (!$kabupaten) {
+            return redirect()->back()->with('error', 'Sesi kabupaten tidak ditemukan. Silakan login ulang.');
+        }
+
+        $kecIdRaw  = $this->request->getGet('kecamatan_id');
+        $desaIdRaw = $this->request->getGet('desa_id');
+        $kecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
+        $desaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+
+        $rows = $this->model->getByKabupaten((int) $kabupaten['id'], $kecamatanId, $desaId);
+
+        $totalLuas  = 0;
+        $totalNilai = 0;
+        foreach ($rows as $row) {
+            $totalLuas  += (float) ($row['luas'] ?? 0);
+            $totalNilai += (float) ($row['nilai_perolehan'] ?? 0);
+        }
+
+        $namaFilterKecamatan = null;
+        $namaFilterDesa      = null;
+        if (!empty($rows)) {
+            if ($kecamatanId) {
+                $namaFilterKecamatan = $rows[0]['nama_kecamatan'] ?? null;
+            }
+            if ($desaId) {
+                $namaFilterDesa = $rows[0]['nama_desa'] ?? null;
+            }
+        }
+
+        $html = view('kabupaten/pdf_kabupaten', [
+            'kabupaten'            => $kabupaten,
+            'namaFilterKecamatan'  => $namaFilterKecamatan,
+            'namaFilterDesa'       => $namaFilterDesa,
+            'rows'                 => $rows,
+            'tanggal_cetak'        => date('d-m-Y'),
+            'total_luas'           => $totalLuas,
+            'total_nilai'          => $totalNilai,
+        ]);
+
+        $options = new DompdfOptions();
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Helvetica');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('F4', 'landscape');
+        $dompdf->render();
+
+        $filenamePart = $namaFilterDesa ?: ($namaFilterKecamatan ?: $kabupaten['nama']);
+        $filename = 'aset_tanah_' . preg_replace('/\s+/', '_', strtolower($filenamePart)) . '_' . date('Ymd_His') . '.pdf';
+
+        $dompdf->stream($filename, ['Attachment' => false]);
+        exit;
+    }
+
 }

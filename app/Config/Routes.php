@@ -9,18 +9,16 @@ use CodeIgniter\Router\RouteCollection;
  $routes->get('/dashboard', 'KabupatenController::landingPage');
 
 
- $routes->get('aset-tanah', 'AsetTanah::index');
+$routes->get('aset-tanah', 'AsetTanah::index');
 $routes->post('aset-tanah/import', 'AsetTanah::import');
 
 $routes->get('aset-tanah/export/excel', 'AsetTanah::exportExcel');
 $routes->get('aset-tanah/export/pdf', 'AsetTanah::exportPdf');
 
+$routes->get('kecamatan/aset-tanah', 'AsetTanah::kecamatanIndex');
+$routes->get('kecamatan/aset-tanah/export/pdf', 'AsetTanah::kecamatanExportPdf');
 
-
-//  $routes->group('aset-tanah', function ($routes) {
-//     $routes->get('/', 'AsetTanah::index');
-//     $routes->post('import', 'AsetTanah::import');
-// });
+$routes->get('kabupaten/aset-tanah/export/pdf', 'AsetTanah::kabupatenExportPdf');
 
 $routes->get('/', 'AuthController::loginpage');
 $routes->get('/admin', 'SuperAdminController::login');

@@ -112,4 +112,49 @@ class AsetTanahModel extends Model
             ->orderBy('nama_barang', 'ASC')
             ->findAll();
     }
+
+    public function getByKecamatan(int $kecamatanId, ?int $desaId = null): array
+    {
+        $builder = \Config\Database::connect()
+            ->table('aset_tanah at')
+            ->select('at.*, d.nama as nama_desa')
+            ->join('desa d', 'd.id = at.desa_id')
+            ->where('d.kecamatan_id', $kecamatanId);
+ 
+        if (!empty($desaId)) {
+            $builder->where('at.desa_id', $desaId);
+        }
+ 
+        return $builder->orderBy('d.nama', 'ASC')
+            ->orderBy('at.kode_barang', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+
+
+    public function getByKabupaten(int $kabupatenId, ?int $kecamatanId = null, ?int $desaId = null): array
+    {
+        $builder = \Config\Database::connect()
+            ->table('aset_tanah at')
+            ->select('at.*, d.nama as nama_desa, k.nama as nama_kecamatan')
+            ->join('desa d', 'd.id = at.desa_id')
+            ->join('kecamatan k', 'k.id = d.kecamatan_id')
+            ->where('k.kabupaten_id', $kabupatenId);
+
+        if (!empty($kecamatanId)) {
+            $builder->where('d.kecamatan_id', $kecamatanId);
+        }
+
+        if (!empty($desaId)) {
+            $builder->where('at.desa_id', $desaId);
+        }
+
+        return $builder->orderBy('k.nama', 'ASC')
+            ->orderBy('d.nama', 'ASC')
+            ->orderBy('at.kode_barang', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+
+    
 }

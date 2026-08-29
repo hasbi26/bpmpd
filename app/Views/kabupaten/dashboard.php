@@ -119,6 +119,70 @@
                                 <p>Verifikasi</p>
                             </a>
                         </li>
+
+
+                        <li class="nav-item has-treeview">
+                            <a href="#" class="nav-link" data-content="aset" id="aset-desa">
+                                <i class="nav-icon bi bi-clipboard-fill"></i>
+                                <p>
+                                    Aset Desa
+                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                </p>
+                            </a>
+
+                            <ul class="nav nav-treeview">
+
+                                <!-- KIB A -->
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link" data-content="kiba" id="kiba">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>KIB A</p>
+                                    </a>
+                                </li>
+
+                                <!-- KIB B -->
+                                <li class="nav-item has-treeview">
+                                    <a href="#" class="nav-link" data-content="kibb" id="kibb">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>
+                                            KIB B
+                                            <i class="nav-arrow bi bi-chevron-right"></i>
+                                        </p>
+                                    </a>
+
+                                    <ul class="nav nav-treeview">
+
+                                        <li class="nav-item">
+                                            <a href="#" class="nav-link" data-content="kendaraan" id="kendaraan">
+                                                <i class="nav-icon bi bi-circle"></i>
+                                                <p>Kendaraan</p>
+                                            </a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a href="#" class="nav-link" data-content="peralatan" id="peralatan">
+                                                <i class="nav-icon bi bi-circle"></i>
+                                                <p>Peralatan dan Mesin</p>
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </li>
+
+                                <!-- KIB C -->
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link" data-content="kibc" id="kibc">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>KIB C</p>
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+
+
+
+
                         <li class="nav-item">
                             <a href="#" class="nav-link" data-content="profil" id="menu-profil">
                                 <i class="nav-iconbi bi-person-circle"></i>
@@ -270,16 +334,23 @@
 
     <script>
     // Fungsi terpisah untuk load content
-    function loadContent(contentType) {
+    function loadContent(contentType, extraParams = {}) {
         const dynamicContent = document.getElementById('dynamic-content');
         if (!dynamicContent) {
             console.error('Target element #dynamic-content not found');
             return;
         }
 
-        dynamicContent.innerHTML = '<div class="text-center py-5">Memuat data...</div>';
+        dynamicContent.innerHTML =
+            '<div class="text-center py-5"><div class="spinner-border text-success" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
-        fetch(`/load-content/${contentType}?role=<?= strtolower(esc($user->role)) ?>`)
+        // Gabungkan role (selalu ada) dengan extraParams (kalau ada, misal desa_id)
+        const params = new URLSearchParams({
+            role: '<?= strtolower(esc($user->role)) ?>',
+            ...extraParams
+        });
+
+        fetch(`/load-content/${contentType}?${params.toString()}`)
             .then(response => {
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return response.text();
@@ -287,41 +358,32 @@
             .then(html => {
                 dynamicContent.innerHTML = html;
 
-                waitForElements(['#uploadDesaBody', '#desaStatusBody', '#uploadKecamatanBody',
-                    '#KecamatanStatusBody', '#modalStatusDetailKabupaten', '#profilDesa'
+                waitForElements(['#documentKecamatan', '#uploadKecamatanBody', '#KecamatanStatusBody',
+                    '#desaDetail'
                 ], (selector, el) => {
-                    if (selector === '#uploadDesaBody') {
-                        modalDesa();
-                    }
-                    if (selector === '#desaStatusBody') {
-                        loadDesaStatus();
+                    if (selector === '#documentKecamatan') {
+                        LoadDocumentKecamatan(1, 10, "");
                     }
                     if (selector === '#uploadKecamatanBody') {
-                        ModalDesaDetailStatus();
+                        modalKecamatan();
                     }
                     if (selector === '#KecamatanStatusBody') {
                         loadKecamatanStatus();
                     }
-                    if (selector === '#modalStatusDetailKabupaten') {
-                        ModalKabupatenDetailStatus();
-                    }
-                    if (selector === '#profilDesa') {
-                        loadProfilDesa();
+                    if (selector === '#desaDetail') {
+                        ModalDesaDetailStatus();
                     }
                 });
 
-
-
-
-                initDynamicContentScripts(); // Fungsi untuk inisialisasi komponen
+                initDynamicContentScripts();
             })
             .catch(error => {
                 console.error('Fetch error:', error);
                 dynamicContent.innerHTML = `
-        <div class="alert alert-danger">
-          Error loading content: ${error.message}
-        </div>
-      `;
+    <div class="alert alert-danger">
+      Error loading content: ${error.message}
+    </div>
+  `;
             });
     }
 
@@ -337,6 +399,36 @@
                 }
             });
         }
+
+
+        const tbl = document.getElementById('tableAsetTanah');
+        if (tbl && window.jQuery && jQuery.fn.DataTable) {
+            // Kalau sebelumnya sudah pernah di-init di elemen ini, hancurkan dulu
+            // supaya tidak dobel saat content di-reload ulang.
+            if (jQuery.fn.DataTable.isDataTable(tbl)) {
+                jQuery(tbl).DataTable().destroy();
+            }
+
+            jQuery(tbl).DataTable({
+                pageLength: 10,
+                lengthMenu: [10, 25, 50, 100],
+                // Total baris dihitung MANUAL seperti sebelumnya (dari PHP),
+                // jadi tidak perlu footerCallback tambahan -- cukup pastikan
+                // baris totalnya ada di <tfoot>, BUKAN di <tbody>.
+                language: {
+                    search: 'Cari:',
+                    lengthMenu: 'Tampilkan _MENU_ baris',
+                    info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                    infoEmpty: 'Tidak ada data',
+                    emptyTable: 'Belum ada data aset tanah untuk ditampilkan.',
+                    zeroRecords: 'Data tidak ditemukan',
+                    paginate: {
+                        previous: 'Sebelumnya',
+                        next: 'Selanjutnya'
+                    }
+                }
+            });
+        }
     }
 
     // Event listeners
@@ -347,13 +439,23 @@
         function setActiveMenu(menuId) {
             document.querySelectorAll('.sidebar-menu a.nav-link').forEach(link => {
                 link.classList.remove('active');
-                link.parentElement.classList.remove('menu-open');
+            });
+
+            document.querySelectorAll('.sidebar-menu .nav-item').forEach(item => {
+                item.classList.remove('menu-open');
             });
 
             const activeLink = document.getElementById(menuId);
+
             if (activeLink) {
                 activeLink.classList.add('active');
-                activeLink.parentElement.classList.add('menu-open');
+
+                const parentTree = activeLink.closest('.has-treeview');
+
+                if (parentTree) {
+                    parentTree.classList.add('menu-open');
+                }
+
                 currentActiveMenu = menuId;
                 localStorage.setItem('activeMenu', menuId);
             }
@@ -362,6 +464,12 @@
         // Attach click handlers
         document.querySelectorAll('.sidebar-menu a.nav-link').forEach(link => {
             link.addEventListener('click', function(e) {
+
+                // Hanya parent TreeView yang dilewatkan ke AdminLTE
+                if (this.closest('.has-treeview') === this.parentElement) {
+                    return;
+                }
+
                 e.preventDefault();
                 const menuId = this.id;
                 const contentType = this.dataset.content;
@@ -1361,6 +1469,9 @@
     </script>
 
 
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 
 </body>
 

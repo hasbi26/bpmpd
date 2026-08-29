@@ -390,6 +390,36 @@
                 }
             });
         }
+
+
+        const tbl = document.getElementById('tableAsetTanah');
+        if (tbl && window.jQuery && jQuery.fn.DataTable) {
+            // Kalau sebelumnya sudah pernah di-init di elemen ini, hancurkan dulu
+            // supaya tidak dobel saat content di-reload ulang.
+            if (jQuery.fn.DataTable.isDataTable(tbl)) {
+                jQuery(tbl).DataTable().destroy();
+            }
+
+            jQuery(tbl).DataTable({
+                pageLength: 10,
+                lengthMenu: [10, 25, 50, 100],
+                // Total baris dihitung MANUAL seperti sebelumnya (dari PHP),
+                // jadi tidak perlu footerCallback tambahan -- cukup pastikan
+                // baris totalnya ada di <tfoot>, BUKAN di <tbody>.
+                language: {
+                    search: 'Cari:',
+                    lengthMenu: 'Tampilkan _MENU_ baris',
+                    info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+                    infoEmpty: 'Tidak ada data',
+                    emptyTable: 'Belum ada data aset tanah untuk ditampilkan.',
+                    zeroRecords: 'Data tidak ditemukan',
+                    paginate: {
+                        previous: 'Sebelumnya',
+                        next: 'Selanjutnya'
+                    }
+                }
+            });
+        }
     }
 
     // Event listeners
@@ -938,7 +968,9 @@
 
 
 
-
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 
 </body>
 

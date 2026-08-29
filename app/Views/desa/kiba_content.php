@@ -110,7 +110,7 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-striped table-bordered table-sm mb-0">
+                            <table id="tableAsetTanah" class="table table-striped table-bordered table-sm mb-0">
                                 <thead>
                                     <tr>
                                         <th>No</th>
@@ -127,19 +127,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if (empty($rows)): ?>
-                                    <tr>
-                                        <td colspan="11" class="text-center text-muted py-3">
-                                            Belum ada data aset tanah yang diupload.
-                                        </td>
-                                    </tr>
-                                    <?php else: ?>
-                                    <?php $totalLuas = 0; $totalNilai = 0; ?>
                                     <?php foreach ($rows as $i => $row): ?>
-                                    <?php
-                                                $totalLuas  += (float) ($row['luas'] ?? 0);
-                                                $totalNilai += (float) ($row['nilai_perolehan'] ?? 0);
-                                            ?>
                                     <tr>
                                         <td><?= $i + 1 ?></td>
                                         <td><?= esc($row['kode_barang'] ?? '-') ?></td>
@@ -165,6 +153,15 @@
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
+                                </tbody>
+                                <?php
+                                    $totalLuas = 0; $totalNilai = 0;
+                                    foreach ($rows as $row) {
+                                        $totalLuas  += (float) ($row['luas'] ?? 0);
+                                        $totalNilai += (float) ($row['nilai_perolehan'] ?? 0);
+                                    }
+                                ?>
+                                <tfoot>
                                     <tr class="fw-bold table-light">
                                         <td colspan="4" class="text-end">Total</td>
                                         <td class="text-end"><?= number_format($totalLuas, 2, ',', '.') ?></td>
@@ -172,8 +169,7 @@
                                         <td class="text-end"><?= number_format($totalNilai, 0, ',', '.') ?></td>
                                         <td colspan="3"></td>
                                     </tr>
-                                    <?php endif; ?>
-                                </tbody>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
