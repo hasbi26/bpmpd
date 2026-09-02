@@ -41,6 +41,7 @@
 </div>
 
 <!-- end table -->
+<div id="desaDetail" style="display:none;"></div>
 
 <div class="card-footer clearfix d-flex justify-content-center">
 
