@@ -359,7 +359,7 @@
                 dynamicContent.innerHTML = html;
 
                 waitForElements(['#documentKecamatan', '#uploadKecamatanBody', '#KecamatanStatusBody',
-                    '#desaDetail'
+                    '#desaDetail', '#desaStatusBody'
                 ], (selector, el) => {
                     if (selector === '#documentKecamatan') {
                         LoadDocumentKecamatan(1, 10, "");
@@ -372,6 +372,9 @@
                     }
                     if (selector === '#desaDetail') {
                         ModalDesaDetailStatus();
+                    }
+                    if (selector === '#desaStatusBody') {
+                        loadDesaStatus();
                     }
                 });
 
@@ -1123,7 +1126,7 @@
             dataType: "json",
             success: function(res) {
 
-                console.log("res", res)
+                console.log("res ini", res)
                 let tbody = $("#KecamatanStatusBody");
                 // $("#DesaStatus").val(res.data[0].status);
 
