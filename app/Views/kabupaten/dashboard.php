@@ -359,7 +359,7 @@
                 dynamicContent.innerHTML = html;
 
                 waitForElements(['#documentKecamatan', '#uploadKecamatanBody', '#KecamatanStatusBody',
-                    '#desaDetail', '#desaStatusBody'
+                    '#desaDetail', '#desaStatusBody', '#desaStatus'
                 ], (selector, el) => {
                     if (selector === '#documentKecamatan') {
                         LoadDocumentKecamatan(1, 10, "");
@@ -376,6 +376,10 @@
                     if (selector === '#desaStatusBody') {
                         loadDesaStatus();
                     }
+                    if (selector === '#desaStatus') {
+                        ModalKabupatenDetailStatus();
+                    }
+
                 });
 
                 initDynamicContentScripts();
