@@ -110,7 +110,9 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table id="tableAsetTanah" class="table table-striped table-bordered table-sm mb-0">
+                            <table id="tableAsetTanah"
+                                class="table table-striped table-bordered table-sm mb-0 datatable-auto">
+
                                 <thead>
                                     <tr>
                                         <th>No</th>

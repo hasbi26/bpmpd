@@ -9,6 +9,15 @@ use CodeIgniter\Router\RouteCollection;
  $routes->get('/dashboard', 'KabupatenController::landingPage');
 
 
+ // --- KIB B: Aset Kendaraan (BARU) ---
+$routes->get('aset-kendaraan', 'AsetKendaraan::index');
+$routes->post('aset-kendaraan/import', 'AsetKendaraan::import');
+$routes->get('aset-kendaraan/export/excel', 'AsetKendaraan::exportExcel');
+$routes->get('aset-kendaraan/export/pdf', 'AsetKendaraan::exportPdf');
+$routes->get('kecamatan/aset-kendaraan/export/pdf', 'AsetKendaraan::kecamatanExportPdf');
+$routes->get('kabupaten/aset-kendaraan/export/pdf', 'AsetKendaraan::kabupatenExportPdf');
+
+
 $routes->get('aset-tanah', 'AsetTanah::index');
 $routes->post('aset-tanah/import', 'AsetTanah::import');
 
