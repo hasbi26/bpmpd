@@ -9,6 +9,15 @@ use CodeIgniter\Router\RouteCollection;
  $routes->get('/dashboard', 'KabupatenController::landingPage');
 
 
+// --- KIB B: Aset Peralatan dan Mesin (BARU) ---
+
+ $routes->get('aset-peralatan', 'AsetPeralatanMesin::index');
+ $routes->post('aset-peralatan/import', 'AsetPeralatanMesin::import');
+ $routes->get('aset-peralatan/export/excel', 'AsetPeralatanMesin::exportExcel');
+ $routes->get('aset-peralatan/export/pdf', 'AsetPeralatanMesin::exportPdf');
+ $routes->get('kecamatan/aset-peralatan/export/pdf', 'AsetPeralatanMesin::kecamatanExportPdf');
+ $routes->get('kabupaten/aset-peralatan/export/pdf', 'AsetPeralatanMesin::kabupatenExportPdf');
+
  // --- KIB B: Aset Kendaraan (BARU) ---
 $routes->get('aset-kendaraan', 'AsetKendaraan::index');
 $routes->post('aset-kendaraan/import', 'AsetKendaraan::import');

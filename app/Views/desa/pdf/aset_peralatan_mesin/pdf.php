@@ -10,7 +10,7 @@
     .meta { margin-bottom: 10px; }
     .meta td { padding: 1px 4px; font-size: 10px; }
     table.data { width: 100%; border-collapse: collapse; margin-top: 6px; }
-    table.data th, table.data td { border: 1px solid #666; padding: 4px 5px; font-size: 8px; vertical-align: top; }
+    table.data th, table.data td { border: 1px solid #666; padding: 4px 5px; font-size: 9px; vertical-align: top; }
     table.data th { background-color: #2C3E50; color: #fff; text-align: center; }
     table.data td.num { text-align: right; }
     table.data td.center { text-align: center; }
@@ -23,37 +23,21 @@
 </head>
 <body>
 
-    <h1>LAPORAN DATA ASET KENDARAAN</h1>
-    <h2>
-        Kabupaten <?= esc($kabupaten['nama']) ?>
-        <?php if ($namaFilterDesa): ?>
-            - Desa <?= esc($namaFilterDesa) ?>
-        <?php elseif ($namaFilterKecamatan): ?>
-            - Kecamatan <?= esc($namaFilterKecamatan) ?>
-        <?php else: ?>
-            (Seluruh Kecamatan &amp; Desa)
-        <?php endif; ?>
-    </h2>
+    <h1>LAPORAN DATA ASET PERALATAN DAN MESIN</h1>
+    <h2>Desa <?= esc($desa['nama']) ?></h2>
 
     <table class="meta">
         <tr>
-            <td><strong>Kabupaten</strong></td>
-            <td>: <?= esc($kabupaten['nama']) ?></td>
-            <td style="width: 30px;"></td>
+            <td><strong>Desa</strong></td>
+            <td>: <?= esc($desa['nama']) ?></td>
+            <td style="width: 40px;"></td>
             <td><strong>Tanggal Cetak</strong></td>
             <td>: <?= esc($tanggal_cetak) ?></td>
         </tr>
         <tr>
-            <td><strong>Cakupan Kecamatan</strong></td>
-            <td>: <?= $namaFilterKecamatan ? esc($namaFilterKecamatan) : 'Seluruh kecamatan' ?></td>
-            <td style="width: 30px;"></td>
-            <td><strong>Cakupan Desa</strong></td>
-            <td>: <?= $namaFilterDesa ? esc($namaFilterDesa) : 'Seluruh desa' ?></td>
-        </tr>
-        <tr>
             <td><strong>Jumlah Aset</strong></td>
             <td>: <?= count($rows) ?> item</td>
-            <td style="width: 30px;"></td>
+            <td style="width: 40px;"></td>
             <td><strong>Total Nilai Perolehan</strong></td>
             <td>: Rp <?= number_format($total_nilai, 0, ',', '.') ?></td>
         </tr>
@@ -62,15 +46,12 @@
     <table class="data">
         <thead>
             <tr>
-                <th style="width:16px;">No</th>
-                <th>Kecamatan</th>
-                <th>Desa</th>
+                <th style="width:20px;">No</th>
                 <th>Kode Barang</th>
                 <th>NUP</th>
-                <th>Jenis Kendaraan</th>
+                <th>Jenis Barang</th>
                 <th>Merk/Tipe</th>
                 <th>Tahun Perolehan</th>
-                <th>Nomor Identitas</th>
                 <th>Nilai Perolehan (Rp)</th>
                 <th>Kondisi</th>
                 <th>Keterangan</th>
@@ -79,19 +60,16 @@
         </thead>
         <tbody>
             <?php if (empty($rows)): ?>
-                <tr><td colspan="13" class="center">Belum ada data aset kendaraan.</td></tr>
+                <tr><td colspan="10" class="center">Belum ada data aset peralatan/mesin.</td></tr>
             <?php else: ?>
                 <?php foreach ($rows as $i => $row): ?>
                     <tr>
                         <td class="center"><?= $i + 1 ?></td>
-                        <td><?= esc($row['nama_kecamatan'] ?? '-') ?></td>
-                        <td><?= esc($row['nama_desa'] ?? '-') ?></td>
                         <td><?= esc($row['kode_barang'] ?? '-') ?></td>
                         <td class="center"><?= esc($row['nup'] ?? '-') ?></td>
                         <td><?= esc($row['nama_barang']) ?></td>
                         <td><?= esc($row['merk_tipe'] ?? '-') ?></td>
                         <td class="center"><?= esc($row['tahun_perolehan'] ?? '-') ?></td>
-                        <td><?= esc($row['nomor_identitas'] ?? '-') ?></td>
                         <td class="num"><?= $row['nilai_perolehan'] !== null ? number_format((float) $row['nilai_perolehan'], 0, ',', '.') : '-' ?></td>
                         <td class="center"><?= esc($row['kondisi'] ?? '-') ?></td>
                         <td><?= esc($row['keterangan'] ?? '-') ?></td>
@@ -105,9 +83,9 @@
     <div class="ttd-wrapper clearfix">
         <div class="ttd-box">
             <div>Mengetahui,</div>
-            <div>Bupati <?= esc($kabupaten['nama']) ?></div>
+            <div>Kepala Desa <?= esc($desa['nama']) ?></div>
             <div class="ttd-space"></div>
-            <div class="ttd-name">(.....................................)</div>
+            <div class="ttd-name"><?= esc($desa['kepala_desa'] ?? '(.....................................)') ?></div>
         </div>
     </div>
 

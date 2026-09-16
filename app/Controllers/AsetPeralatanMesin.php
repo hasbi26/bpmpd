@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\AsetKendaraanModel;
+use App\Models\AsetPeralatanMesinModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -10,13 +10,13 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
 
-class AsetKendaraan extends BaseController
+class AsetPeralatanMesin extends BaseController
 {
-    protected AsetKendaraanModel $model;
+    protected AsetPeralatanMesinModel $model;
 
     public function __construct()
     {
-        $this->model = new AsetKendaraanModel();
+        $this->model = new AsetPeralatanMesinModel();
     }
 
     public function index()
@@ -24,8 +24,8 @@ class AsetKendaraan extends BaseController
         $desa = $this->getDesaContext();
         $rows = $desa ? $this->model->getByDesa((int) $desa['id']) : [];
 
-        return view('aset_kendaraan/upload', [
-            'title' => 'Import Data Aset Kendaraan',
+        return view('aset_peralatan_mesin/upload', [
+            'title' => 'Import Data Aset Peralatan dan Mesin',
             'rows'  => $rows,
         ]);
     }
@@ -47,9 +47,8 @@ class AsetKendaraan extends BaseController
         ];
 
         if (!$this->validate($validationRule)) {
-
                 session()->setFlashdata('error', json_encode($this->validator->getErrors()));
-                return redirect()->to('desa/dashboard');    
+                return redirect()->to('desa/dashboard'); 
         }
 
         $file = $this->request->getFile('file_excel');
@@ -62,47 +61,44 @@ class AsetKendaraan extends BaseController
         $desaId = session()->get('role_id');
         if (empty($desaId) || session()->get('role') !== 'desa') {
             session()->setFlashdata('error', 'Sesi desa tidak ditemukan. Silakan login ulang.');
-            return redirect()->to('desa/dashboard');   
+            return redirect()->to('desa/dashboard');
         }
 
         try {
             $spreadsheet = IOFactory::load($file->getTempName());
         } catch (\Throwable $e) {
-
             session()->setFlashdata('error', json_encode($e->getMessage()));
-            return redirect()->to('desa/dashboard');    
-
+            return redirect()->to('desa/dashboard');   
         }
 
-        $sheet = $spreadsheet->getSheetByName('Data Aset Kendaraan') ?? $spreadsheet->getActiveSheet();
+        $sheet = $spreadsheet->getSheetByName('Data Aset Peralatan Mesin') ?? $spreadsheet->getActiveSheet();
         $highestRow = $sheet->getHighestDataRow();
 
         // Kolom sesuai template: A=KODE_BARANG, B=NUP, C=NAMA_BARANG, D=MERK_TIPE,
-        // E=TAHUN_PEROLEHAN, F=NOMOR_IDENTITAS, G=NILAI_PEROLEHAN, H=KONDISI,
-        // I=KETERANGAN, J=TANGGAL_REKAP, K=LINK_FOTO
+        // E=TAHUN_PEROLEHAN, F=NILAI_PEROLEHAN, G=KONDISI, H=KETERANGAN,
+        // I=TANGGAL_REKAP, J=LINK_FOTO
         $rows      = [];
         $rowErrors = [];
         $startRow  = 2;
 
         for ($r = $startRow; $r <= $highestRow; $r++) {
-            $kodeBarang    = trim((string) $sheet->getCell("A{$r}")->getValue());
-            $nup           = trim((string) $sheet->getCell("B{$r}")->getValue());
-            $namaBarang    = trim((string) $sheet->getCell("C{$r}")->getValue());
-            $merkTipe      = trim((string) $sheet->getCell("D{$r}")->getValue());
-            $tahun         = $sheet->getCell("E{$r}")->getValue();
-            $nomorIdentitas = trim((string) $sheet->getCell("F{$r}")->getValue());
-            $nilai         = $sheet->getCell("G{$r}")->getValue();
-            $kondisi       = strtoupper(trim((string) $sheet->getCell("H{$r}")->getValue()));
-            $keterangan    = trim((string) $sheet->getCell("I{$r}")->getValue());
-            $tanggalCell   = $sheet->getCell("J{$r}");
-            $linkFoto      = trim((string) $sheet->getCell("K{$r}")->getValue());
+            $kodeBarang  = trim((string) $sheet->getCell("A{$r}")->getValue());
+            $nup         = trim((string) $sheet->getCell("B{$r}")->getValue());
+            $namaBarang  = trim((string) $sheet->getCell("C{$r}")->getValue());
+            $merkTipe    = trim((string) $sheet->getCell("D{$r}")->getValue());
+            $tahun       = $sheet->getCell("E{$r}")->getValue();
+            $nilai       = $sheet->getCell("F{$r}")->getValue();
+            $kondisi     = strtoupper(trim((string) $sheet->getCell("G{$r}")->getValue()));
+            $keterangan  = trim((string) $sheet->getCell("H{$r}")->getValue());
+            $tanggalCell = $sheet->getCell("I{$r}");
+            $linkFoto    = trim((string) $sheet->getCell("J{$r}")->getValue());
 
             if ($namaBarang === '' && $kodeBarang === '' && $nup === '') {
                 continue;
             }
 
             if ($namaBarang === '') {
-                $rowErrors[] = "Baris {$r}: kolom NAMA_BARANG (jenis kendaraan) wajib diisi.";
+                $rowErrors[] = "Baris {$r}: kolom NAMA_BARANG (jenis peralatan/mesin) wajib diisi.";
                 continue;
             }
 
@@ -111,8 +107,8 @@ class AsetKendaraan extends BaseController
                 continue;
             }
 
-            // TANGGAL_REKAP: sama seperti aset tanah, cek numerik dulu (excel date
-            // serial), baru fallback ke beberapa pola teks umum.
+            // TANGGAL_REKAP: cek numerik dulu (excel date serial), baru fallback
+            // ke beberapa pola teks umum -- sama seperti aset tanah & kendaraan.
             $tanggalRekap = null;
             $rawTanggal   = $tanggalCell->getValue();
 
@@ -138,7 +134,6 @@ class AsetKendaraan extends BaseController
             }
 
             if (empty($tanggalRekap)) {
-                
                 $rowErrors[] = "Baris {$r}: kolom TANGGAL_REKAP wajib diisi dengan format tanggal yang valid (YYYY-MM-DD).";
                 continue;
             }
@@ -152,7 +147,6 @@ class AsetKendaraan extends BaseController
                 'nama_barang'     => $namaBarang,
                 'merk_tipe'       => $merkTipe !== '' ? $merkTipe : null,
                 'tahun_perolehan' => $tahun !== '' && $tahun !== null ? (int) $tahun : null,
-                'nomor_identitas' => $nomorIdentitas !== '' ? $nomorIdentitas : null,
                 'nilai_perolehan' => $nilai !== '' && $nilai !== null ? (float) $nilai : null,
                 'kondisi'         => $kondisi !== '' ? $kondisi : null,
                 'keterangan'      => $keterangan !== '' ? $keterangan : null,
@@ -167,7 +161,7 @@ class AsetKendaraan extends BaseController
 
         if (empty($rows)) {
             session()->setFlashdata('error', 'Tidak ada data yang bisa dibaca dari file excel. Pastikan Anda menggunakan template yang benar.');
-            return redirect()->to('desa/dashboard');  
+            return redirect()->to('desa/dashboard');
         }
 
         $result = $this->model->replaceForDesa((int) $desaId, $rows);
@@ -182,10 +176,9 @@ class AsetKendaraan extends BaseController
             return redirect()->to('desa/dashboard');    
         }
 
-        
-        session()->setFlashdata('success', "Berhasil mengganti data aset kendaraan dengan {$result['inserted']} baris baru dari file yang diupload.");
-        return redirect()->to('desa/dashboard'); 
 
+        session()->setFlashdata('success', "Berhasil mengganti data aset peralatan/mesin dengan {$result['inserted']} baris baru dari file yang diupload.");
+        return redirect()->to('desa/dashboard');
 
     }
 
@@ -217,15 +210,15 @@ class AsetKendaraan extends BaseController
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Data Aset Kendaraan');
+        $sheet->setTitle('Data Aset Peralatan Mesin');
 
         $headers = [
             'KODE_BARANG', 'NUP', 'NAMA_BARANG', 'MERK_TIPE', 'TAHUN_PEROLEHAN',
-            'NOMOR_IDENTITAS', 'NILAI_PEROLEHAN', 'KONDISI', 'KETERANGAN', 'TANGGAL_REKAP', 'LINK_FOTO',
+            'NILAI_PEROLEHAN', 'KONDISI', 'KETERANGAN', 'TANGGAL_REKAP', 'LINK_FOTO',
         ];
         $sheet->fromArray($headers, null, 'A1');
-        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
-        $sheet->getStyle('J2:J500')->getNumberFormat()->setFormatCode('@');
+        $sheet->getStyle('A1:J1')->getFont()->setBold(true);
+        $sheet->getStyle('I2:I500')->getNumberFormat()->setFormatCode('@');
 
         $r = 2;
         foreach ($rows as $row) {
@@ -239,7 +232,6 @@ class AsetKendaraan extends BaseController
                 $row['nama_barang'],
                 $row['merk_tipe'],
                 $row['tahun_perolehan'],
-                $row['nomor_identitas'],
                 $row['nilai_perolehan'],
                 $row['kondisi'],
                 $row['keterangan'],
@@ -249,11 +241,11 @@ class AsetKendaraan extends BaseController
             $r++;
         }
 
-        foreach (range('A', 'K') as $col) {
+        foreach (range('A', 'J') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $filename = 'aset_kendaraan_' . preg_replace('/\s+/', '_', strtolower($desa['nama'])) . '_' . date('Ymd_His') . '.xlsx';
+        $filename = 'aset_peralatan_mesin_' . preg_replace('/\s+/', '_', strtolower($desa['nama'])) . '_' . date('Ymd_His') . '.xlsx';
 
         $writer = new Xlsx($spreadsheet);
 
@@ -279,7 +271,7 @@ class AsetKendaraan extends BaseController
             $totalNilai += (float) ($row['nilai_perolehan'] ?? 0);
         }
 
-        $html = view('desa/kendaraan_pdf', [
+        $html = view('desa/pdf/aset_peralatan_mesin/pdf', [
             'desa'          => $desa,
             'rows'          => $rows,
             'tanggal_cetak' => date('d-m-Y'),
@@ -295,7 +287,7 @@ class AsetKendaraan extends BaseController
         $dompdf->setPaper('F4', 'landscape');
         $dompdf->render();
 
-        $filename = 'aset_kendaraan_' . preg_replace('/\s+/', '_', strtolower($desa['nama'])) . '_' . date('Ymd_His') . '.pdf';
+        $filename = 'aset_peralatan_mesin_' . preg_replace('/\s+/', '_', strtolower($desa['nama'])) . '_' . date('Ymd_His') . '.pdf';
 
         $dompdf->stream($filename, ['Attachment' => false]);
         exit;
@@ -340,7 +332,7 @@ class AsetKendaraan extends BaseController
             $namaFilterDesa = $rows[0]['nama_desa'] ?? null;
         }
 
-        $html = view('kecamatan/pdf/kendaraan/kendaraan_pdf_kecamatan', [
+        $html = view('kecamatan/pdf/aset_peralatan_mesin/pdf_kecamatan', [
             'kecamatan'      => $kecamatan,
             'namaFilterDesa' => $namaFilterDesa,
             'rows'           => $rows,
@@ -358,7 +350,7 @@ class AsetKendaraan extends BaseController
         $dompdf->render();
 
         $filenamePart = $namaFilterDesa ?: $kecamatan['nama'];
-        $filename = 'aset_kendaraan_' . preg_replace('/\s+/', '_', strtolower($filenamePart)) . '_' . date('Ymd_His') . '.pdf';
+        $filename = 'aset_peralatan_mesin_' . preg_replace('/\s+/', '_', strtolower($filenamePart)) . '_' . date('Ymd_His') . '.pdf';
 
         $dompdf->stream($filename, ['Attachment' => false]);
         exit;
@@ -411,7 +403,7 @@ class AsetKendaraan extends BaseController
             }
         }
 
-        $html = view('kabupaten/pdf/kendaraan/kendaraan_pdf_kabupaten', [
+        $html = view('kabupaten/pdf/aset_peralatan_mesin/pdf_kabupaten', [
             'kabupaten'           => $kabupaten,
             'namaFilterKecamatan' => $namaFilterKecamatan,
             'namaFilterDesa'      => $namaFilterDesa,
@@ -430,7 +422,7 @@ class AsetKendaraan extends BaseController
         $dompdf->render();
 
         $filenamePart = $namaFilterDesa ?: ($namaFilterKecamatan ?: $kabupaten['nama']);
-        $filename = 'aset_kendaraan_' . preg_replace('/\s+/', '_', strtolower($filenamePart)) . '_' . date('Ymd_His') . '.pdf';
+        $filename = 'aset_peralatan_mesin_' . preg_replace('/\s+/', '_', strtolower($filenamePart)) . '_' . date('Ymd_His') . '.pdf';
 
         $dompdf->stream($filename, ['Attachment' => false]);
         exit;

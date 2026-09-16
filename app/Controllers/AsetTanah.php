@@ -421,7 +421,7 @@ class AsetTanah extends BaseController
             $namaFilterDesa = $rows[0]['nama_desa'] ?? null;
         }
  
-        $html = view('kecamatan/pdf_kecamatan', [
+        $html = view('kecamatan/pdf/aset_tanah/pdf_kecamatan', [
             'kecamatan'      => $kecamatan,
             'namaFilterDesa' => $namaFilterDesa,
             'rows'           => $rows,
@@ -500,7 +500,7 @@ class AsetTanah extends BaseController
             }
         }
 
-        $html = view('kabupaten/pdf_kabupaten', [
+        $html = view('kabupaten/pdf/aset_tanah/pdf_kabupaten', [
             'kabupaten'            => $kabupaten,
             'namaFilterKecamatan'  => $namaFilterKecamatan,
             'namaFilterDesa'       => $namaFilterDesa,
