@@ -18,13 +18,20 @@ use CodeIgniter\Router\RouteCollection;
  $routes->get('kecamatan/aset-peralatan/export/pdf', 'AsetPeralatanMesin::kecamatanExportPdf');
  $routes->get('kabupaten/aset-peralatan/export/pdf', 'AsetPeralatanMesin::kabupatenExportPdf');
 
- // --- KIB B: Aset Kendaraan (BARU) ---
+ // --- KIB c: Aset Kendaraan (BARU) ---
 $routes->get('aset-kendaraan', 'AsetKendaraan::index');
 $routes->post('aset-kendaraan/import', 'AsetKendaraan::import');
 $routes->get('aset-kendaraan/export/excel', 'AsetKendaraan::exportExcel');
 $routes->get('aset-kendaraan/export/pdf', 'AsetKendaraan::exportPdf');
 $routes->get('kecamatan/aset-kendaraan/export/pdf', 'AsetKendaraan::kecamatanExportPdf');
 $routes->get('kabupaten/aset-kendaraan/export/pdf', 'AsetKendaraan::kabupatenExportPdf');
+
+$routes->get('aset-bangunan', 'AsetBangunan::index');
+$routes->post('aset-bangunan/import', 'AsetBangunan::import');
+$routes->get('aset-bangunan/export/excel', 'AsetBangunan::exportExcel');
+$routes->get('aset-bangunan/export/pdf', 'AsetBangunan::exportPdf');
+$routes->get('kecamatan/aset-bangunan/export/pdf', 'AsetBangunan::kecamatanExportPdf');
+$routes->get('kabupaten/aset-bangunan/export/pdf', 'AsetBangunan::kabupatenExportPdf');
 
 
 $routes->get('aset-tanah', 'AsetTanah::index');

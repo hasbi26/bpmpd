@@ -100,6 +100,10 @@ class ContentController extends BaseController
                 $asetPeralatanModel = new \App\Models\AsetPeralatanMesinModel();
                 $rows = $asetPeralatanModel->getByDesa((int) $idprofil);
 
+            } elseif ($role === 'desa' && $type === 'kibc') {
+                $asetBangunanModel = new \App\Models\AsetBangunanModel();
+                $rows = $asetBangunanModel->getByDesa((int) $idprofil);
+
             } elseif ($role === 'kecamatan' && $type === 'kiba') {
                 $asetTanahModel = new \App\Models\AsetTanahModel();
 
@@ -222,6 +226,52 @@ class ContentController extends BaseController
                 $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
 
                 $rows = $asetPeralatanModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
+
+                $kecamatanList = \Config\Database::connect()
+                    ->table('kecamatan')
+                    ->select('id, nama')
+                    ->where('kabupaten_id', $idprofil)
+                    ->orderBy('nama', 'ASC')
+                    ->get()
+                    ->getResultArray();
+
+                $desaBuilder = \Config\Database::connect()
+                    ->table('desa d')
+                    ->select('d.id, d.nama')
+                    ->join('kecamatan k', 'k.id = d.kecamatan_id')
+                    ->where('k.kabupaten_id', $idprofil);
+
+                if (!empty($selectedKecamatanId)) {
+                    $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
+                }
+
+                $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
+
+            } elseif ($role === 'kecamatan' && $type === 'kibc') {
+                $asetBangunanModel = new \App\Models\AsetBangunanModel();
+
+                $desaIdRaw      = $this->request->getGet('desa_id');
+                $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+
+                $rows = $asetBangunanModel->getByKecamatan((int) $idprofil, $selectedDesaId);
+
+                $desaList = \Config\Database::connect()
+                    ->table('desa')
+                    ->select('id, nama')
+                    ->where('kecamatan_id', $idprofil)
+                    ->orderBy('nama', 'ASC')
+                    ->get()
+                    ->getResultArray();
+
+            } elseif ($role === 'kabupaten' && $type === 'kibc') {
+                $asetBangunanModel = new \App\Models\AsetBangunanModel();
+
+                $kecIdRaw  = $this->request->getGet('kecamatan_id');
+                $desaIdRaw = $this->request->getGet('desa_id');
+                $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
+                $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+
+                $rows = $asetBangunanModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
 
                 $kecamatanList = \Config\Database::connect()
                     ->table('kecamatan')

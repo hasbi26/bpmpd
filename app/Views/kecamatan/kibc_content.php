@@ -1,85 +1,6 @@
-<h3 class="mb-3" id="content-title">KIB C - BANGUNAN <?= esc(ucfirst($role)) ?>
-    <?= esc(ucfirst(strtolower($namaWilayah))) ?>
+<h3 class="mb-3" id="content-title">KIB C - BANGUNAN DESA DI <?= esc(ucfirst(strtoupper($role))) ?>
+    <?= esc(ucfirst(strtoupper($namaWilayah))) ?>
 </h3>
-
-<?php if (session()->getFlashdata('success')): ?>
-<div class="alert alert-success">
-    <?= esc(session()->getFlashdata('success')) ?>
-</div>
-<?php elseif (session()->getFlashdata('error')): ?>
-<div class="alert alert-danger">
-    <?= esc(session()->getFlashdata('error')) ?>
-</div>
-<?php endif; ?>
-
-<div class="row">
-    <div class="col-12">
-
-        <div class="card card-primary card-outline mt-4">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="bi bi-upload me-1"></i> Import Data Aset Bangunan
-                </h3>
-                <div class="card-tools">
-                    <a href="<?= base_url('aset-bangunan/export/excel') ?>" class="btn btn-sm btn-success">
-                        <i class="bi bi-file-earmark-excel me-1"></i> Download Excel (Data Terakhir)
-                    </a>
-                    <a href="<?= base_url('aset-bangunan/export/pdf') ?>" class="btn btn-sm btn-danger" target="_blank">
-                        <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
-                    </a>
-                </div>
-            </div>
-
-            <div class="card-body">
-
-                <?php if (session()->getFlashdata('errors')): ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Data gagal disimpan:</strong>
-                    <ul class="mb-0 mt-2">
-                        <?php foreach (session()->getFlashdata('errors') as $err): ?>
-                        <li><?= esc(is_array($err) ? implode(' - ', $err) : $err) ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                <?php endif; ?>
-
-                <p class="text-muted">
-                    Unggah file excel data aset bangunan sesuai template yang sudah disediakan.
-                    Belum punya template?
-                    <a href="<?= base_url('templates/template_aset_bangunan.xlsx') ?>" download>
-                        Unduh template di sini
-                    </a>.
-                </p>
-
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle me-1"></i>
-                    <strong>Perhatian:</strong> mengupload file ini akan <strong>mengganti total</strong>
-                    seluruh data aset bangunan desa Anda yang sudah tersimpan sebelumnya.
-                    Kalau hanya ingin menambah/mengubah sebagian data, download dulu data terbaru,
-                    edit di file tersebut, baru upload ulang.
-                </div>
-
-                <?= form_open_multipart('aset-bangunan/import') ?>
-
-                <div class="mb-3">
-                    <label for="file_excel" class="form-label">File Excel (.xlsx / .xls)</label>
-                    <input type="file" name="file_excel" id="file_excel" class="form-control" accept=".xlsx,.xls"
-                        required>
-                    <div class="form-text">Ukuran maksimal 5 MB.</div>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-cloud-arrow-up me-1"></i> Upload &amp; Simpan
-                </button>
-
-                <?= form_close() ?>
-
-            </div>
-        </div>
-
-    </div>
-</div>
 
 <div class="row">
     <div class="col-12">
@@ -87,16 +8,49 @@
         <div class="card card-outline card-secondary mt-4">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="bi bi-table me-1"></i> Data Aset Bangunan Saat Ini
+                    <i class="bi bi-table me-1"></i> Data Aset Bangunan Seluruh Desa
                 </h3>
+                <div class="card-tools">
+                    <a href="<?= base_url('kecamatan/aset-bangunan/export/pdf') . ($selectedDesaId ? '?desa_id=' . $selectedDesaId : '') ?>"
+                       class="btn btn-sm btn-danger" target="_blank">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                    </a>
+                </div>
             </div>
+
+            <div class="card-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-auto">
+                        <label for="desa_id" class="col-form-label">Filter Desa:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select name="desa_id" id="desa_id" class="form-select"
+                                onchange="loadContent('kibc', this.value ? { desa_id: this.value } : {})">
+                            <option value="">-- Semua Desa --</option>
+                            <?php foreach ($desaList as $d): ?>
+                                <option value="<?= esc($d['id']) ?>" <?= (string) $selectedDesaId === (string) $d['id'] ? 'selected' : '' ?>>
+                                    <?= esc($d['nama']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php if (!empty($selectedDesaId)): ?>
+                        <div class="col-auto">
+                            <a href="#" onclick="loadContent('kibc'); return false;" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i> Reset Filter
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table id="tableAsetBangunan"
-                        class="table table-striped table-bordered table-sm mb-0 datatable-auto">
+                    <table id="tableAsetBangunan" class="table table-striped table-bordered table-sm mb-0 datatable-auto">
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>Desa</th>
                                 <th>Kode Barang</th>
                                 <th>NUP</th>
                                 <th>Jenis Bangunan</th>
@@ -113,6 +67,7 @@
                             <?php foreach ($rows as $i => $row): ?>
                             <tr>
                                 <td><?= $i + 1 ?></td>
+                                <td><?= esc($row['nama_desa'] ?? '-') ?></td>
                                 <td><?= esc($row['kode_barang'] ?? '-') ?></td>
                                 <td><?= esc($row['nup'] ?? '-') ?></td>
                                 <td><?= esc($row['nama_barang']) ?></td>
@@ -146,7 +101,7 @@
                         ?>
                         <tfoot>
                             <tr class="fw-bold table-light">
-                                <td colspan="4" class="text-end">Total</td>
+                                <td colspan="5" class="text-end">Total</td>
                                 <td class="text-end"><?= number_format($totalLuas, 2, ',', '.') ?></td>
                                 <td colspan="2"></td>
                                 <td class="text-end"><?= number_format($totalNilai, 0, ',', '.') ?></td>
