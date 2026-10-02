@@ -38,7 +38,7 @@ class ContentController extends BaseController
             }
     
             // Daftar konten yang valid
-            $validContents = ['status', 'upload', 'settings', 'profil', 'kendaraan', 'kiba', 'peralatan', 'kibc'];
+            $validContents = ['status', 'upload', 'settings', 'profil', 'kendaraan', 'kiba', 'peralatan', 'kibc','kibd', 'kibe'];
             if (!in_array($type, $validContents)) {
                 throw new \CodeIgniter\Exceptions\PageNotFoundException('Tipe konten tidak valid');
             }
@@ -80,236 +80,336 @@ class ContentController extends BaseController
                 $profilDesa = $desaModel->getAllProfilDesa($search, $length, $page);
             } 
 
-            // ================== BAGIAN YANG BERUBAH ==================
+ // ================== BAGIAN YANG BERUBAH ==================
+ 
+ $rows           = [];
+ $desaList       = [];
+ $kecamatanList  = [];
+ $selectedDesaId = null;
+ $selectedKecamatanId = null;
 
-            $rows           = [];
-            $desaList       = [];
-            $kecamatanList  = [];
-            $selectedDesaId = null;
-            $selectedKecamatanId = null;
+ if ($role === 'desa' && $type === 'kiba') {
+     $asetTanahModel = new \App\Models\AsetTanahModel();
+     $rows = $asetTanahModel->getByDesa((int) $idprofil);
 
-            if ($role === 'desa' && $type === 'kiba') {
-                $asetTanahModel = new \App\Models\AsetTanahModel();
-                $rows = $asetTanahModel->getByDesa((int) $idprofil);
+ } elseif ($role === 'desa' && $type === 'kendaraan') {
+     $asetKendaraanModel = new \App\Models\AsetKendaraanModel();
+     $rows = $asetKendaraanModel->getByDesa((int) $idprofil);
 
-            } elseif ($role === 'desa' && $type === 'kendaraan') {
-                $asetKendaraanModel = new \App\Models\AsetKendaraanModel();
-                $rows = $asetKendaraanModel->getByDesa((int) $idprofil);
+ } elseif ($role === 'desa' && $type === 'peralatan') {
+     $asetPeralatanModel = new \App\Models\AsetPeralatanMesinModel();
+     $rows = $asetPeralatanModel->getByDesa((int) $idprofil);
 
-            } elseif ($role === 'desa' && $type === 'peralatan') {
-                $asetPeralatanModel = new \App\Models\AsetPeralatanMesinModel();
-                $rows = $asetPeralatanModel->getByDesa((int) $idprofil);
+ } elseif ($role === 'desa' && $type === 'kibc') {
+     $asetBangunanModel = new \App\Models\AsetBangunanModel();
+     $rows = $asetBangunanModel->getByDesa((int) $idprofil);
 
-            } elseif ($role === 'desa' && $type === 'kibc') {
-                $asetBangunanModel = new \App\Models\AsetBangunanModel();
-                $rows = $asetBangunanModel->getByDesa((int) $idprofil);
+ } elseif ($role === 'desa' && $type === 'kibd') {
+     $asetJalanIrigasiModel = new \App\Models\AsetJalanIrigasiModel();
+     $rows = $asetJalanIrigasiModel->getByDesa((int) $idprofil);
 
-            } elseif ($role === 'kecamatan' && $type === 'kiba') {
-                $asetTanahModel = new \App\Models\AsetTanahModel();
+ } elseif ($role === 'desa' && $type === 'kibe') {
+     $asetLainnyaModel = new \App\Models\AsetLainnyaModel();
+     $rows = $asetLainnyaModel->getByDesa((int) $idprofil);
 
-                // Filter desa dikirim lewat query string ?desa_id=... dari dropdown
-                $desaIdRaw      = $this->request->getGet('desa_id');
-                $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+ } elseif ($role === 'kecamatan' && $type === 'kiba') {
+     $asetTanahModel = new \App\Models\AsetTanahModel();
 
-                $rows = $asetTanahModel->getByKecamatan((int) $idprofil, $selectedDesaId);
+     // Filter desa dikirim lewat query string ?desa_id=... dari dropdown
+     $desaIdRaw      = $this->request->getGet('desa_id');
+     $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
 
-                // Daftar desa di bawah kecamatan ini, untuk mengisi dropdown filter
-                $desaList = \Config\Database::connect()
-                    ->table('desa')
-                    ->select('id, nama')
-                    ->where('kecamatan_id', $idprofil)
-                    ->orderBy('nama', 'ASC')
-                    ->get()
-                    ->getResultArray();
+     $rows = $asetTanahModel->getByKecamatan((int) $idprofil, $selectedDesaId);
 
-            } elseif ($role === 'kabupaten' && $type === 'kiba') {
-                $asetTanahModel = new \App\Models\AsetTanahModel();
+     // Daftar desa di bawah kecamatan ini, untuk mengisi dropdown filter
+     $desaList = \Config\Database::connect()
+         ->table('desa')
+         ->select('id, nama')
+         ->where('kecamatan_id', $idprofil)
+         ->orderBy('nama', 'ASC')
+         ->get()
+         ->getResultArray();
 
-                $kecIdRaw  = $this->request->getGet('kecamatan_id');
-                $desaIdRaw = $this->request->getGet('desa_id');
-                $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
-                $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+ } elseif ($role === 'kabupaten' && $type === 'kiba') {
+     $asetTanahModel = new \App\Models\AsetTanahModel();
 
-                $rows = $asetTanahModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
+     $kecIdRaw  = $this->request->getGet('kecamatan_id');
+     $desaIdRaw = $this->request->getGet('desa_id');
+     $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
+     $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
 
-                // Daftar kecamatan di bawah kabupaten ini, untuk dropdown filter pertama
-                $kecamatanList = \Config\Database::connect()
-                    ->table('kecamatan')
-                    ->select('id, nama')
-                    ->where('kabupaten_id', $idprofil)
-                    ->orderBy('nama', 'ASC')
-                    ->get()
-                    ->getResultArray();
+     $rows = $asetTanahModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
 
-                // Daftar desa untuk dropdown kedua: kalau kecamatan dipilih,
-                // hanya desa di kecamatan itu; kalau tidak, semua desa di kabupaten ini.
-                $desaBuilder = \Config\Database::connect()
-                    ->table('desa d')
-                    ->select('d.id, d.nama')
-                    ->join('kecamatan k', 'k.id = d.kecamatan_id')
-                    ->where('k.kabupaten_id', $idprofil);
+     // Daftar kecamatan di bawah kabupaten ini, untuk dropdown filter pertama
+     $kecamatanList = \Config\Database::connect()
+         ->table('kecamatan')
+         ->select('id, nama')
+         ->where('kabupaten_id', $idprofil)
+         ->orderBy('nama', 'ASC')
+         ->get()
+         ->getResultArray();
 
-                if (!empty($selectedKecamatanId)) {
-                    $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
-                }
+     // Daftar desa untuk dropdown kedua: kalau kecamatan dipilih,
+     // hanya desa di kecamatan itu; kalau tidak, semua desa di kabupaten ini.
+     $desaBuilder = \Config\Database::connect()
+         ->table('desa d')
+         ->select('d.id, d.nama')
+         ->join('kecamatan k', 'k.id = d.kecamatan_id')
+         ->where('k.kabupaten_id', $idprofil);
 
-                $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
+     if (!empty($selectedKecamatanId)) {
+         $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
+     }
 
-            } elseif ($role === 'kecamatan' && $type === 'kendaraan') {
-                $asetKendaraanModel = new \App\Models\AsetKendaraanModel();
+     $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
 
-                $desaIdRaw      = $this->request->getGet('desa_id');
-                $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+ } elseif ($role === 'kecamatan' && $type === 'kendaraan') {
+     $asetKendaraanModel = new \App\Models\AsetKendaraanModel();
 
-                $rows = $asetKendaraanModel->getByKecamatan((int) $idprofil, $selectedDesaId);
+     $desaIdRaw      = $this->request->getGet('desa_id');
+     $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
 
-                $desaList = \Config\Database::connect()
-                    ->table('desa')
-                    ->select('id, nama')
-                    ->where('kecamatan_id', $idprofil)
-                    ->orderBy('nama', 'ASC')
-                    ->get()
-                    ->getResultArray();
+     $rows = $asetKendaraanModel->getByKecamatan((int) $idprofil, $selectedDesaId);
 
-            } elseif ($role === 'kabupaten' && $type === 'kendaraan') {
-                $asetKendaraanModel = new \App\Models\AsetKendaraanModel();
+     $desaList = \Config\Database::connect()
+         ->table('desa')
+         ->select('id, nama')
+         ->where('kecamatan_id', $idprofil)
+         ->orderBy('nama', 'ASC')
+         ->get()
+         ->getResultArray();
 
-                $kecIdRaw  = $this->request->getGet('kecamatan_id');
-                $desaIdRaw = $this->request->getGet('desa_id');
-                $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
-                $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+ } elseif ($role === 'kabupaten' && $type === 'kendaraan') {
+     $asetKendaraanModel = new \App\Models\AsetKendaraanModel();
 
-                $rows = $asetKendaraanModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
+     $kecIdRaw  = $this->request->getGet('kecamatan_id');
+     $desaIdRaw = $this->request->getGet('desa_id');
+     $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
+     $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
 
-                $kecamatanList = \Config\Database::connect()
-                    ->table('kecamatan')
-                    ->select('id, nama')
-                    ->where('kabupaten_id', $idprofil)
-                    ->orderBy('nama', 'ASC')
-                    ->get()
-                    ->getResultArray();
+     $rows = $asetKendaraanModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
 
-                $desaBuilder = \Config\Database::connect()
-                    ->table('desa d')
-                    ->select('d.id, d.nama')
-                    ->join('kecamatan k', 'k.id = d.kecamatan_id')
-                    ->where('k.kabupaten_id', $idprofil);
+     $kecamatanList = \Config\Database::connect()
+         ->table('kecamatan')
+         ->select('id, nama')
+         ->where('kabupaten_id', $idprofil)
+         ->orderBy('nama', 'ASC')
+         ->get()
+         ->getResultArray();
 
-                if (!empty($selectedKecamatanId)) {
-                    $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
-                }
+     $desaBuilder = \Config\Database::connect()
+         ->table('desa d')
+         ->select('d.id, d.nama')
+         ->join('kecamatan k', 'k.id = d.kecamatan_id')
+         ->where('k.kabupaten_id', $idprofil);
 
-                $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
+     if (!empty($selectedKecamatanId)) {
+         $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
+     }
 
-            } elseif ($role === 'kecamatan' && $type === 'peralatan') {
-                $asetPeralatanModel = new \App\Models\AsetPeralatanMesinModel();
+     $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
 
-                $desaIdRaw      = $this->request->getGet('desa_id');
-                $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+ } elseif ($role === 'kecamatan' && $type === 'peralatan') {
+     $asetPeralatanModel = new \App\Models\AsetPeralatanMesinModel();
 
-                $rows = $asetPeralatanModel->getByKecamatan((int) $idprofil, $selectedDesaId);
+     $desaIdRaw      = $this->request->getGet('desa_id');
+     $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
 
-                $desaList = \Config\Database::connect()
-                    ->table('desa')
-                    ->select('id, nama')
-                    ->where('kecamatan_id', $idprofil)
-                    ->orderBy('nama', 'ASC')
-                    ->get()
-                    ->getResultArray();
+     $rows = $asetPeralatanModel->getByKecamatan((int) $idprofil, $selectedDesaId);
 
-            } elseif ($role === 'kabupaten' && $type === 'peralatan') {
-                $asetPeralatanModel = new \App\Models\AsetPeralatanMesinModel();
+     $desaList = \Config\Database::connect()
+         ->table('desa')
+         ->select('id, nama')
+         ->where('kecamatan_id', $idprofil)
+         ->orderBy('nama', 'ASC')
+         ->get()
+         ->getResultArray();
 
-                $kecIdRaw  = $this->request->getGet('kecamatan_id');
-                $desaIdRaw = $this->request->getGet('desa_id');
-                $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
-                $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+ } elseif ($role === 'kabupaten' && $type === 'peralatan') {
+     $asetPeralatanModel = new \App\Models\AsetPeralatanMesinModel();
 
-                $rows = $asetPeralatanModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
+     $kecIdRaw  = $this->request->getGet('kecamatan_id');
+     $desaIdRaw = $this->request->getGet('desa_id');
+     $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
+     $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
 
-                $kecamatanList = \Config\Database::connect()
-                    ->table('kecamatan')
-                    ->select('id, nama')
-                    ->where('kabupaten_id', $idprofil)
-                    ->orderBy('nama', 'ASC')
-                    ->get()
-                    ->getResultArray();
+     $rows = $asetPeralatanModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
 
-                $desaBuilder = \Config\Database::connect()
-                    ->table('desa d')
-                    ->select('d.id, d.nama')
-                    ->join('kecamatan k', 'k.id = d.kecamatan_id')
-                    ->where('k.kabupaten_id', $idprofil);
+     $kecamatanList = \Config\Database::connect()
+         ->table('kecamatan')
+         ->select('id, nama')
+         ->where('kabupaten_id', $idprofil)
+         ->orderBy('nama', 'ASC')
+         ->get()
+         ->getResultArray();
 
-                if (!empty($selectedKecamatanId)) {
-                    $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
-                }
+     $desaBuilder = \Config\Database::connect()
+         ->table('desa d')
+         ->select('d.id, d.nama')
+         ->join('kecamatan k', 'k.id = d.kecamatan_id')
+         ->where('k.kabupaten_id', $idprofil);
 
-                $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
+     if (!empty($selectedKecamatanId)) {
+         $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
+     }
 
-            } elseif ($role === 'kecamatan' && $type === 'kibc') {
-                $asetBangunanModel = new \App\Models\AsetBangunanModel();
+     $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
 
-                $desaIdRaw      = $this->request->getGet('desa_id');
-                $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+ } elseif ($role === 'kecamatan' && $type === 'kibc') {
+     $asetBangunanModel = new \App\Models\AsetBangunanModel();
 
-                $rows = $asetBangunanModel->getByKecamatan((int) $idprofil, $selectedDesaId);
+     $desaIdRaw      = $this->request->getGet('desa_id');
+     $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
 
-                $desaList = \Config\Database::connect()
-                    ->table('desa')
-                    ->select('id, nama')
-                    ->where('kecamatan_id', $idprofil)
-                    ->orderBy('nama', 'ASC')
-                    ->get()
-                    ->getResultArray();
+     $rows = $asetBangunanModel->getByKecamatan((int) $idprofil, $selectedDesaId);
 
-            } elseif ($role === 'kabupaten' && $type === 'kibc') {
-                $asetBangunanModel = new \App\Models\AsetBangunanModel();
+     $desaList = \Config\Database::connect()
+         ->table('desa')
+         ->select('id, nama')
+         ->where('kecamatan_id', $idprofil)
+         ->orderBy('nama', 'ASC')
+         ->get()
+         ->getResultArray();
 
-                $kecIdRaw  = $this->request->getGet('kecamatan_id');
-                $desaIdRaw = $this->request->getGet('desa_id');
-                $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
-                $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+ } elseif ($role === 'kabupaten' && $type === 'kibc') {
+     $asetBangunanModel = new \App\Models\AsetBangunanModel();
 
-                $rows = $asetBangunanModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
+     $kecIdRaw  = $this->request->getGet('kecamatan_id');
+     $desaIdRaw = $this->request->getGet('desa_id');
+     $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
+     $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
 
-                $kecamatanList = \Config\Database::connect()
-                    ->table('kecamatan')
-                    ->select('id, nama')
-                    ->where('kabupaten_id', $idprofil)
-                    ->orderBy('nama', 'ASC')
-                    ->get()
-                    ->getResultArray();
+     $rows = $asetBangunanModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
 
-                $desaBuilder = \Config\Database::connect()
-                    ->table('desa d')
-                    ->select('d.id, d.nama')
-                    ->join('kecamatan k', 'k.id = d.kecamatan_id')
-                    ->where('k.kabupaten_id', $idprofil);
+     $kecamatanList = \Config\Database::connect()
+         ->table('kecamatan')
+         ->select('id, nama')
+         ->where('kabupaten_id', $idprofil)
+         ->orderBy('nama', 'ASC')
+         ->get()
+         ->getResultArray();
 
-                if (!empty($selectedKecamatanId)) {
-                    $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
-                }
+     $desaBuilder = \Config\Database::connect()
+         ->table('desa d')
+         ->select('d.id, d.nama')
+         ->join('kecamatan k', 'k.id = d.kecamatan_id')
+         ->where('k.kabupaten_id', $idprofil);
 
-                $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
-            }
+     if (!empty($selectedKecamatanId)) {
+         $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
+     }
 
-            return view($viewPath, [
-                'role'                => $role,
-                'type'                => $type,
-                'namaWilayah'         => $namaWilayah,
-                'templates'           => $template,
-                'idprofil'            => $idprofil,
-                'profilDesa'          => $profilDesa,
-                'search'              => $search,
-                'rows'                => $rows,
-                'desaList'            => $desaList,
-                'kecamatanList'       => $kecamatanList,
-                'selectedDesaId'      => $selectedDesaId,
-                'selectedKecamatanId' => $selectedKecamatanId,
-            ]);
+     $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
 
-            // ================== AKHIR BAGIAN YANG BERUBAH ==================
+ } elseif ($role === 'kecamatan' && $type === 'kibd') {
+     $asetJalanIrigasiModel = new \App\Models\AsetJalanIrigasiModel();
+
+     $desaIdRaw      = $this->request->getGet('desa_id');
+     $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+
+     $rows = $asetJalanIrigasiModel->getByKecamatan((int) $idprofil, $selectedDesaId);
+
+     $desaList = \Config\Database::connect()
+         ->table('desa')
+         ->select('id, nama')
+         ->where('kecamatan_id', $idprofil)
+         ->orderBy('nama', 'ASC')
+         ->get()
+         ->getResultArray();
+
+ } elseif ($role === 'kabupaten' && $type === 'kibd') {
+     $asetJalanIrigasiModel = new \App\Models\AsetJalanIrigasiModel();
+
+     $kecIdRaw  = $this->request->getGet('kecamatan_id');
+     $desaIdRaw = $this->request->getGet('desa_id');
+     $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
+     $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+
+     $rows = $asetJalanIrigasiModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
+
+     $kecamatanList = \Config\Database::connect()
+         ->table('kecamatan')
+         ->select('id, nama')
+         ->where('kabupaten_id', $idprofil)
+         ->orderBy('nama', 'ASC')
+         ->get()
+         ->getResultArray();
+
+     $desaBuilder = \Config\Database::connect()
+         ->table('desa d')
+         ->select('d.id, d.nama')
+         ->join('kecamatan k', 'k.id = d.kecamatan_id')
+         ->where('k.kabupaten_id', $idprofil);
+
+     if (!empty($selectedKecamatanId)) {
+         $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
+     }
+
+     $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
+ }
+ elseif ($role === 'kecamatan' && $type === 'kibe') {
+    $asetLainnyaModel = new \App\Models\AsetLainnyaModel();
+
+    $desaIdRaw      = $this->request->getGet('desa_id');
+    $selectedDesaId = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+
+    $rows = $asetLainnyaModel->getByKecamatan((int) $idprofil, $selectedDesaId);
+
+    $desaList = \Config\Database::connect()
+        ->table('desa')
+        ->select('id, nama')
+        ->where('kecamatan_id', $idprofil)
+        ->orderBy('nama', 'ASC')
+        ->get()
+        ->getResultArray();
+
+} elseif ($role === 'kabupaten' && $type === 'kibe') {
+    $asetLainnyaModel = new \App\Models\AsetLainnyaModel();
+
+    $kecIdRaw  = $this->request->getGet('kecamatan_id');
+    $desaIdRaw = $this->request->getGet('desa_id');
+    $selectedKecamatanId = ($kecIdRaw !== null && $kecIdRaw !== '') ? (int) $kecIdRaw : null;
+    $selectedDesaId      = ($desaIdRaw !== null && $desaIdRaw !== '') ? (int) $desaIdRaw : null;
+
+    $rows = $asetLainnyaModel->getByKabupaten((int) $idprofil, $selectedKecamatanId, $selectedDesaId);
+
+    $kecamatanList = \Config\Database::connect()
+        ->table('kecamatan')
+        ->select('id, nama')
+        ->where('kabupaten_id', $idprofil)
+        ->orderBy('nama', 'ASC')
+        ->get()
+        ->getResultArray();
+
+    $desaBuilder = \Config\Database::connect()
+        ->table('desa d')
+        ->select('d.id, d.nama')
+        ->join('kecamatan k', 'k.id = d.kecamatan_id')
+        ->where('k.kabupaten_id', $idprofil);
+
+    if (!empty($selectedKecamatanId)) {
+        $desaBuilder->where('d.kecamatan_id', $selectedKecamatanId);
+    }
+
+    $desaList = $desaBuilder->orderBy('d.nama', 'ASC')->get()->getResultArray();
+}
+
+ return view($viewPath, [
+     'role'                => $role,
+     'type'                => $type,
+     'namaWilayah'         => $namaWilayah,
+     'templates'           => $template,
+     'idprofil'            => $idprofil,
+     'profilDesa'          => $profilDesa,
+     'search'              => $search,
+     'rows'                => $rows,
+     'desaList'            => $desaList,
+     'kecamatanList'       => $kecamatanList,
+     'selectedDesaId'      => $selectedDesaId,
+     'selectedKecamatanId' => $selectedKecamatanId,
+ ]);
+
+ // ================== AKHIR BAGIAN YANG BERUBAH ==================
 
                        
             

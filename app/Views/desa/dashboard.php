@@ -177,6 +177,28 @@
                                     </a>
                                 </li>
 
+                                <!-- KIB D -->
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link" data-content="kibd" id="kibd">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>KIB D</p>
+                                    </a>
+                                </li>
+                                <!-- KIB E -->
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link" data-content="kibe" id="kibe">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>KIB E</p>
+                                    </a>
+                                </li>
+                                <!-- KIB F -->
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link" data-content="kibf" id="kibf">
+                                        <i class="nav-icon bi bi-circle"></i>
+                                        <p>KIB F</p>
+                                    </a>
+                                </li>
+
                             </ul>
                         </li>
 

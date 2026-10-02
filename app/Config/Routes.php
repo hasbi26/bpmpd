@@ -26,6 +26,27 @@ $routes->get('aset-kendaraan/export/pdf', 'AsetKendaraan::exportPdf');
 $routes->get('kecamatan/aset-kendaraan/export/pdf', 'AsetKendaraan::kecamatanExportPdf');
 $routes->get('kabupaten/aset-kendaraan/export/pdf', 'AsetKendaraan::kabupatenExportPdf');
 
+
+// --- KIB D: Aset Jalan dan Irigasi (BARU) ---
+$routes->get('aset-jalan-irigasi', 'AsetJalanIrigasi::index');
+$routes->post('aset-jalan-irigasi/import', 'AsetJalanIrigasi::import');
+$routes->get('aset-jalan-irigasi/export/excel', 'AsetJalanIrigasi::exportExcel');
+$routes->get('aset-jalan-irigasi/export/pdf', 'AsetJalanIrigasi::exportPdf');
+$routes->get('kecamatan/aset-jalan-irigasi/export/pdf', 'AsetJalanIrigasi::kecamatanExportPdf');
+$routes->get('kabupaten/aset-jalan-irigasi/export/pdf', 'AsetJalanIrigasi::kabupatenExportPdf');
+
+
+// --- KIB E: Aset Lainya (BARU) ---
+$routes->get('aset-lainnya', 'AsetLainnya::index');
+$routes->post('aset-lainnya/import', 'AsetLainnya::import');
+$routes->get('aset-lainnya/export/excel', 'AsetLainnya::exportExcel');
+$routes->get('aset-lainnya/export/pdf', 'AsetLainnya::exportPdf');
+$routes->get('kecamatan/aset-lainnya/export/pdf', 'AsetLainnya::kecamatanExportPdf');
+$routes->get('kabupaten/aset-lainnya/export/pdf', 'AsetLainnya::kabupatenExportPdf');
+
+
+
+
 $routes->get('aset-bangunan', 'AsetBangunan::index');
 $routes->post('aset-bangunan/import', 'AsetBangunan::import');
 $routes->get('aset-bangunan/export/excel', 'AsetBangunan::exportExcel');
