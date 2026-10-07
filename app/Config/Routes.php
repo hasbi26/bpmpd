@@ -44,6 +44,14 @@ $routes->get('aset-lainnya/export/pdf', 'AsetLainnya::exportPdf');
 $routes->get('kecamatan/aset-lainnya/export/pdf', 'AsetLainnya::kecamatanExportPdf');
 $routes->get('kabupaten/aset-lainnya/export/pdf', 'AsetLainnya::kabupatenExportPdf');
 
+// --- KIB F: Aset Rusak hilang (BARU) ---
+$routes->get('aset-hilang-rusak', 'AsetHilangRusak::index');
+$routes->post('aset-hilang-rusak/import', 'AsetHilangRusak::import');
+$routes->get('aset-hilang-rusak/export/excel', 'AsetHilangRusak::exportExcel');
+$routes->get('aset-hilang-rusak/export/pdf', 'AsetHilangRusak::exportPdf');
+$routes->get('kecamatan/aset-hilang-rusak/export/pdf', 'AsetHilangRusak::kecamatanExportPdf');
+$routes->get('kabupaten/aset-hilang-rusak/export/pdf', 'AsetHilangRusak::kabupatenExportPdf');
+
 
 
 
